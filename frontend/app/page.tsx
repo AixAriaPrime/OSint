@@ -167,7 +167,7 @@ export default function OmniTraceDashboard() {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       wsRef.current?.close();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- intentionally runs once on mount to establish a persistent WS connection; setState setters are stable references
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- runs once to establish persistent WebSocket connection
 
   const handleSearch = async () => {
     const q = query.trim();

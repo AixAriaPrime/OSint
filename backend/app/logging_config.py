@@ -21,7 +21,7 @@ LOG_DIR = "logs"
 
 
 def configure_logging() -> None:
-    """Set up all Loguru sinks.  Safe to call multiple times."""
+    """Set up all Loguru sinks. Safe to call multiple times."""
     global _CONFIGURED
     if _CONFIGURED:
         return
