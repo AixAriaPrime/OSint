@@ -22,7 +22,7 @@ interface SearchResponse {
   ai_summary: string | null;
 }
 
-export default function SearchPage() {
+export default function SearchPageClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const q = searchParams.get("q") || "";
