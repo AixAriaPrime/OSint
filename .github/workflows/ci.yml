@@ -10,6 +10,8 @@ jobs:
   backend-lint:
     name: Backend – lint & type-check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: backend
@@ -26,6 +28,8 @@ jobs:
   frontend-build:
     name: Frontend – type-check & build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     defaults:
       run:
         working-directory: frontend
@@ -44,6 +48,8 @@ jobs:
   docker-compose-validate:
     name: Validate docker-compose
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - run: docker compose config --quiet

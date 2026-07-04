@@ -12,6 +12,21 @@ logger = logging.getLogger(__name__)
 
 _VT_BASE = "https://www.virustotal.com/api/v3"
 
+import ipaddress
+
+
+def _classify(query: str) -> str:
+    """Return 'ip', 'domain', or 'hash'."""
+    try:
+        ipaddress.ip_address(query)
+        return "ip"
+    except ValueError:
+        pass
+    # If it contains a dot but isn't purely hex it's likely a domain
+    if "." in query and not all(c in "0123456789abcdefABCDEF" for c in query):
+        return "domain"
+    return "hash"
+
 
 class VirusTotalIntegration(BaseIntegration):
     name = "virustotal"
@@ -23,12 +38,12 @@ class VirusTotalIntegration(BaseIntegration):
         headers = {"x-apikey": settings.virustotal_api_key}
 
         # Determine resource type
-        if "." in query and not query.replace(".", "").isdigit():
-            endpoint = f"{_VT_BASE}/domains/{query}"
-        elif query.replace(".", "").isdigit():
+        resource_type = _classify(query)
+        if resource_type == "ip":
             endpoint = f"{_VT_BASE}/ip_addresses/{query}"
+        elif resource_type == "domain":
+            endpoint = f"{_VT_BASE}/domains/{query}"
         else:
-            # Treat as file hash
             endpoint = f"{_VT_BASE}/files/{query}"
 
         try:

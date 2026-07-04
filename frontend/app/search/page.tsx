@@ -56,9 +56,10 @@ export default function SearchPage() {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (q) doSearch(q);
-  }, [q]);
+  }, [q]); // doSearch is defined inline; re-creating it on every render is safe here
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
