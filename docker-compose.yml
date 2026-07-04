@@ -1,48 +1,37 @@
-version: "3.9"
+version: '3.8'
 
 services:
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
   backend:
     build: ./backend
-    restart: unless-stopped
     ports:
       - "8000:8000"
-    env_file:
-      - .env
     environment:
-      REDIS_URL: redis://redis:6379
-      CORS_ORIGINS: http://localhost:3000
+      - DATABASE_URL=postgres://...
     depends_on:
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - postgres
+      - redis
 
   frontend:
     build: ./frontend
-    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8000
-    depends_on:
-      backend:
-        condition: service_healthy
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+
+  postgres:
+    image: postgres:16
+    environment:
+      - POSTGRES_DB=omnitrace
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+
+  pgbouncer:
+    image: bitnami/pgbouncer
+    ports:
+      - "6432:6432"
 
 volumes:
-  redis_data:
+  postgres_data:
