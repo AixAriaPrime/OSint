@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import logging
-
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,11 +7,15 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+from app.audit import AuditMiddleware
 from app.cache import close_redis
 from app.config import settings
+from app.logging_config import configure_logging, deploy_logger
 from app.router import router
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+# Initialise structured logging with rotation/retention before anything else.
+configure_logging()
+deploy_logger.info("OmniTrace API starting up")
 
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
@@ -23,6 +25,7 @@ limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
 async def lifespan(app: FastAPI):
     yield
     await close_redis()
+    deploy_logger.info("OmniTrace API shut down")
 
 
 app = FastAPI(
@@ -42,6 +45,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(AuditMiddleware)
 
 app.include_router(router)
 
