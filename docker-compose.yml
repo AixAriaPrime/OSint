@@ -81,7 +81,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://backend:8000
+      NEXT_PUBLIC_API_URL: http://localhost:8000
     depends_on:
       backend:
         condition: service_healthy
@@ -92,7 +92,7 @@ services:
     image: grafana/loki:2.9.0
     restart: unless-stopped
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
     volumes:
       - ./observability/loki/config.yml:/etc/loki/config.yml:ro
       - loki_data:/loki
