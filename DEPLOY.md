@@ -4,7 +4,7 @@
 
 ```bash
 cp .env.example .env
-# Fill in API keys in .env
+# Fill in API keys and change POSTGRES_PASSWORD / GRAFANA_PASSWORD in .env
 docker compose up --build -d
 ```
 
@@ -12,7 +12,10 @@ Services:
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API docs**: http://localhost:8000/docs
+- **PostgreSQL**: localhost:5432 (direct) / localhost:6432 (via PgBouncer)
 - **Redis**: localhost:6379
+- **Grafana dashboards**: http://localhost:3001  (default login: admin / admin)
+- **Loki** (log ingestion): localhost:3100
 
 ---
 
