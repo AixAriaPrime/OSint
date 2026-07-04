@@ -128,14 +128,20 @@ export default function OmniTraceDashboard() {
 
   useEffect(() => {
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+    let reconnectAttempts = 0;
+    const maxAttempts = 5;
+    const baseDelay = 1000;
 
-    const connectWebSocket = () => {
+    const connect = () => {
       const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const wsUrl = base.replace(/^http(s?)/, (_match, secure: string) => (secure ? "wss" : "ws")) + "/ws";
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
-      ws.onopen = () => setWsStatus("connected");
+      ws.onopen = () => {
+        setWsStatus("connected");
+        reconnectAttempts = 0;
+      };
       ws.onmessage = (event) => {
         const data: SearchResponse = JSON.parse(event.data);
         setResults(data);
@@ -143,17 +149,19 @@ export default function OmniTraceDashboard() {
         setGraphNodes(nodes);
         setGraphEdges(edges);
       };
-      ws.onerror = () => {
-        setWsStatus("error");
-        console.error("WebSocket error - reconnecting...");
-        reconnectTimer = setTimeout(connectWebSocket, 3000);
+      ws.onerror = () => setWsStatus("error");
+      ws.onclose = () => {
+        setWsStatus("disconnected");
+        if (reconnectAttempts < maxAttempts) {
+          const delay = baseDelay * Math.pow(2, reconnectAttempts);
+          console.log(`Reconnecting in ${delay}ms… (attempt ${reconnectAttempts + 1}/${maxAttempts})`);
+          reconnectTimer = setTimeout(connect, delay);
+          reconnectAttempts++;
+        }
       };
-      ws.onclose = () => setWsStatus("disconnected");
-
-      return ws;
     };
 
-    connectWebSocket();
+    connect();
 
     return () => {
       if (reconnectTimer) clearTimeout(reconnectTimer);
