@@ -51,14 +51,23 @@ All integrations degrade gracefully — missing keys simply skip that source.
 
 ```bash
 # Search any query — type is auto-detected
-curl -X POST http://localhost:8000/api/search \
+curl -X POST http://localhost:8000/search \
   -H "Content-Type: application/json" \
   -d '{"query": "8.8.8.8"}'
 
 # Force a specific type
-curl -X POST http://localhost:8000/api/search \
+curl -X POST http://localhost:8000/search \
   -H "Content-Type: application/json" \
   -d '{"query": "example.com", "force_type": "domain"}'
+
+# Health check
+curl http://localhost:8000/health
+# {"status": "ok"}
+
+# WebSocket (real-time streaming results)
+# Connect to ws://localhost:8000/ws and send:
+# {"query": "8.8.8.8", "query_type": "auto"}
+# Results stream back progressively as each integration completes.
 ```
 
 ## Project Structure

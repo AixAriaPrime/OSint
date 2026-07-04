@@ -74,6 +74,6 @@ NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
 ## Health Check
 
 ```bash
-curl http://localhost:8000/api/health
+curl http://localhost:8000/health
 # {"status": "ok"}
 ```

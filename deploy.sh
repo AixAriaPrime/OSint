@@ -32,7 +32,8 @@ echo "🔨 Building project..."
 npm run build --prefix frontend || handle_error "Frontend Build" "Build failed"
 
 echo "🧪 Running tests..."
-npm test --prefix backend || echo "⚠️ Tests skipped or had issues (continuing)"
+cd backend && python -m pytest --tb=short -q || echo "⚠️ Tests skipped or had issues (continuing)"
+cd ..
 
 # Deploy
 echo "📦 Deploying to $ENV..."

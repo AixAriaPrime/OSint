@@ -4,7 +4,7 @@ import asyncio
 import hashlib
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 
 from .ai import generate_summary
@@ -22,7 +22,7 @@ from .models import SearchRequest, SearchResponse
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api")
+router = APIRouter()
 
 # Integrations per query type
 _INTEGRATIONS_BY_TYPE: dict[QueryType, list] = {
@@ -87,3 +87,46 @@ async def search(request: SearchRequest) -> SearchResponse:
 @router.get("/health")
 async def health() -> JSONResponse:
     return JSONResponse({"status": "ok"})
+
+
+@router.websocket("/ws")
+async def websocket_search(websocket: WebSocket) -> None:
+    await websocket.accept()
+    try:
+        while True:
+            payload = await websocket.receive_json()
+            query = str(payload.get("query", "")).strip()
+            if not query:
+                continue
+
+            query_type = detect_query_type(query)
+            integrations = _INTEGRATIONS_BY_TYPE.get(query_type, [])
+            accumulated: list = []
+
+            # Stream each integration result as it arrives
+            for future in asyncio.as_completed(integ.run(query) for integ in integrations):
+                result = await future
+                accumulated.append(result)
+                await websocket.send_json(
+                    SearchResponse(
+                        query=query,
+                        query_type=query_type,
+                        cached=False,
+                        results=accumulated,
+                    ).model_dump(mode="json")
+                )
+
+            # Final message with AI summary
+            response = SearchResponse(
+                query=query,
+                query_type=query_type,
+                cached=False,
+                results=accumulated,
+            )
+            response.ai_summary = await generate_summary(response)
+            await websocket.send_json(response.model_dump(mode="json"))
+
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected")
+    except Exception as exc:
+        logger.error("WebSocket error: %s", exc)
