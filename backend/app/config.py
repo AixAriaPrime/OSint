@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     virustotal_api_key: Optional[str] = None
     hibp_api_key: Optional[str] = None
     litellm_api_key: Optional[str] = None
+    hybrid_analysis_api_key: Optional[str] = None
+    anyrun_api_key: Optional[str] = None
 
     # LiteLLM model (e.g. "gpt-4o-mini", "claude-3-haiku-20240307", "ollama/llama3")
     ai_model: str = "gpt-4o-mini"

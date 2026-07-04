@@ -11,6 +11,7 @@ class QueryType(str, Enum):
     EMAIL = "email"
     PHONE = "phone"
     HASH = "hash"
+    URL = "url"
     USERNAME = "username"
     UNKNOWN = "unknown"
 
@@ -21,6 +22,7 @@ _EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9.\-]{1,253}\.[A-Za-z
 _DOMAIN_RE = re.compile(r"^(?:[A-Za-z0-9][A-Za-z0-9\-]{0,61}[A-Za-z0-9]?\.)+[A-Za-z]{2,}$")
 _PHONE_RE = re.compile(r"^\+?[\d\s\-().]{7,20}$")
 _HASH_RE = re.compile(r"^[0-9a-fA-F]{32,64}$")
+_URL_RE = re.compile(r"^https?://[^\s]{1,2000}$", re.IGNORECASE)
 
 _MAX_QUERY_LEN = 512
 
@@ -40,6 +42,8 @@ def detect_query_type(query: str) -> QueryType:
 
     if _EMAIL_RE.match(q):
         return QueryType.EMAIL
+    if _URL_RE.match(q):
+        return QueryType.URL
     if _DOMAIN_RE.match(q):
         return QueryType.DOMAIN
     if _HASH_RE.match(q):

@@ -28,6 +28,47 @@ def _classify(query: str) -> str:
     return "hash"
 
 
+async def submit_to_virustotal(
+    target: str, target_type: str, api_key: str
+) -> dict:
+    """Submit a URL or file hash to VirusTotal for analysis.
+
+    Args:
+        target: URL string or file hash to submit.
+        target_type: ``"url"`` to submit a URL for scanning, ``"file"`` to
+            re-analyse a file by its hash.
+        api_key: VirusTotal API key.
+
+    Returns:
+        A dict containing the analysis ``id`` and ``type`` on success, or an
+        ``error`` key on failure.
+    """
+    headers = {"x-apikey": api_key}
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            if target_type == "url":
+                # VT v3 encodes the URL as url-safe base64 (no padding) for
+                # the endpoint; the POST body uses plain form data.
+                resp = await client.post(
+                    f"{_VT_BASE}/urls",
+                    headers=headers,
+                    data={"url": target},
+                )
+            else:
+                # Re-analyse an already-known file by hash
+                resp = await client.post(
+                    f"{_VT_BASE}/files/{target}/analyse",
+                    headers=headers,
+                )
+            resp.raise_for_status()
+            data = resp.json().get("data", {})
+            return {"id": data.get("id"), "type": data.get("type")}
+    except httpx.HTTPStatusError as exc:
+        return {"error": f"HTTP {exc.response.status_code}: {exc.response.text[:200]}"}
+    except Exception as exc:
+        return {"error": str(exc)}
+
+
 class VirusTotalIntegration(BaseIntegration):
     name = "virustotal"
 
@@ -71,3 +112,17 @@ class VirusTotalIntegration(BaseIntegration):
             return self._err(f"HTTP {exc.response.status_code}: {exc.response.text[:200]}")
         except Exception as exc:
             return self._err(str(exc))
+
+
+class VirusTotalURLIntegration(BaseIntegration):
+    """Submit a URL to VirusTotal and return the resulting analysis metadata."""
+
+    name = "virustotal_submit"
+
+    async def run(self, query: str) -> IntegrationResult:
+        if not settings.virustotal_api_key:
+            return self._err("VIRUSTOTAL_API_KEY not configured")
+        result = await submit_to_virustotal(query, "url", settings.virustotal_api_key)
+        if "error" in result:
+            return self._err(result["error"])
+        return self._ok(result)

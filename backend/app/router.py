@@ -10,11 +10,13 @@ from fastapi.responses import JSONResponse
 from .ai import generate_summary
 from .cache import cache_get, cache_set
 from .detector import QueryType, detect_query_type
+from .integrations.anyrun import AnyRunIntegration
 from .integrations.dns_lookup import DNSIntegration
 from .integrations.hibp import HIBPIntegration
+from .integrations.hybrid_analysis import HybridAnalysisIntegration
 from .integrations.ipapi import IPAPIIntegration
 from .integrations.shodan import ShodanIntegration
-from .integrations.virustotal import VirusTotalIntegration
+from .integrations.virustotal import VirusTotalIntegration, VirusTotalURLIntegration
 from .integrations.whois_lookup import WhoisIntegration
 from .models import SearchRequest, SearchResponse
 
@@ -39,6 +41,11 @@ _INTEGRATIONS_BY_TYPE: dict[QueryType, list] = {
     ],
     QueryType.HASH: [
         VirusTotalIntegration(),
+    ],
+    QueryType.URL: [
+        VirusTotalURLIntegration(),
+        HybridAnalysisIntegration(),
+        AnyRunIntegration(),
     ],
     QueryType.PHONE: [],
     QueryType.USERNAME: [],
