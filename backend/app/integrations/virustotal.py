@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ipaddress
 import logging
 
 import httpx
@@ -11,8 +12,6 @@ from .base import BaseIntegration
 logger = logging.getLogger(__name__)
 
 _VT_BASE = "https://www.virustotal.com/api/v3"
-
-import ipaddress
 
 
 def _classify(query: str) -> str:
