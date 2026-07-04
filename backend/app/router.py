@@ -99,7 +99,9 @@ async def websocket_search(websocket: WebSocket) -> None:
             if not query:
                 continue
 
-            client_type = payload.get("force_type") or payload.get("query_type")
+            client_type = payload.get("force_type")
+            if client_type is None:
+                client_type = payload.get("query_type")
             query_type = None
             if client_type and client_type != "auto":
                 try:
