@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, ArrowLeft, RefreshCw } from "lucide-react";
 import ResultCard from "@/components/ResultCard";
@@ -22,7 +22,7 @@ interface SearchResponse {
   ai_summary: string | null;
 }
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const q = searchParams.get("q") || "";
@@ -143,5 +143,13 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="py-8 text-center text-slate-400">Loading search...</div>}>
+      <SearchPageContent />
+    </Suspense>
   );
 }

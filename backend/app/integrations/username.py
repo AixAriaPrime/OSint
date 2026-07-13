@@ -1,33 +1,49 @@
-from typing import Dict, Any, List
+from typing import Any, Dict
+
 
 class UsernameSearch:
-    """Cross-platform username search"""
-    
+    """Cross-platform username search helper."""
+
     PLATFORMS = [
-        "Twitter", "Instagram", "Facebook", "TikTok", "GitHub",
-        "Reddit", "YouTube", "Steam", "Twitch", "Pinterest",
-        "Medium", "Quora", "SoundCloud", "Vimeo", "Flickr",
-        "Keybase", "Mastodon", "Pastebin", "Snapchat", "Discord"
+        "twitter",
+        "instagram",
+        "facebook",
+        "tiktok",
+        "github",
+        "reddit",
+        "youtube",
+        "steam",
+        "twitch",
+        "pinterest",
+        "medium",
+        "quora",
+        "soundcloud",
+        "vimeo",
+        "flickr",
+        "keybase",
+        "mastodon",
+        "pastebin",
+        "snapchat",
+        "discord",
     ]
-    
+
     @staticmethod
     async def search(username: str) -> Dict[str, Any]:
-        username = username.strip().replace("@", "")
-        
-        return 
-            "username": username,
+        normalized = username.strip().replace("@", "")
+        return {
+            "username": normalized,
             "platforms": [
-                {"platform": p, "url": f"https://{p.lower().com/username"}
-                for p in UsernameSearch.PLATFORMS
+                {"platform": platform, "url": f"https://{platform}.com/{normalized}"}
+                for platform in UsernameSearch.PLATFORMS
             ],
             "tools": [
-                "name": "Sherlock", "url": "https://github.com/sherlock-project/sherlock",
-                "name": "Namechk", "url": "https://namechk.com",
-                "name": "WhatsMyName", "url": "https://whatsmyname.app",
-                "name": "UserSearch", "url": "https://usersearch.co"
+                {"name": "Sherlock", "url": "https://github.com/sherlock-project/sherlock"},
+                {"name": "Namechk", "url": "https://namechk.com/"},
+                {"name": "WhatsMyName", "url": "https://whatsmyname.app/"},
+                {"name": "UserSearch", "url": "https://usersearch.org/"},
             ],
-            "search_commands": 
-                "sherlock": f"python3 sherlock.py {username",
-                "whatsmyname": f"Visit https://whatsmyname.app and search for username"
-            }
-  }
+            "search_commands": {
+                "sherlock": f"python3 sherlock.py {normalized}",
+                "whatsmyname": f"Search {normalized} on https://whatsmyname.app/",
+            },
+        }

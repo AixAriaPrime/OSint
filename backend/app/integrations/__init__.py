@@ -1,61 +1,45 @@
-from .phone import PhoneLookup
-from .metadata import ImageMetadata
-from .username import UsernameSearch
+from .anyrun import AnyRunIntegration
+from .breach import BreachCheck, BreachRelationships, PeopleSearch
+from .crypto_wallet import CryptoWallet, ExchangeTracker
+from .darkweb import DarkWebDorks, VPNProxyCheck, WiFiGeolocation
+from .dns_lookup import DNSIntegration
+from .domain import DomainRecon, ReverseImage
 from .email import EmailOSINT
-from .domain import DomainRecon
-from .reverse_image import ReverseImage
-from .breach import BreachCheck
-from .people import PeopleSearch
-from .breach_relatives import BreachRelationships
-from .crypto_wallet import CryptoWallet
-from .exchange import ExchangeTracker
-from .darkweb import DarkWebDorks
-from .vpn import VPNProxyCheck
-from .wifi import WiFiGeolocation
-from .telegram import TelegramOSINT
-from .social import SocialOmni
-from .vehicle import VehicleLookup
-from .historical import HistoricalData
-from .public_records import PublicRecords
-from .shodan import ShodanLookup
-from .screenshot import ScreenshotTools
-from .cleaner import MetadataCleaner
-from .network import NetworkRecon
-from .threat import ThreatIntel
-from .remove import PersonalDataRemoval
-from .specialized import SpecializedSearch
-from .audio import AudioForensics
-from .qr import QRBarcodeTools
-from .pgp import PGPKeyLookup
+from .hibp import HIBPIntegration
+from .hybrid_analysis import HybridAnalysisIntegration
+from .ipapi import IPAPIIntegration
+from .metadata import ImageMetadata
+from .Phone import PhoneLookup
+from .shodan import ShodanIntegration
+from .telegram import SocialOmni, TelegramOSINT
+from .username import UsernameSearch
+from .virustotal import VirusTotalIntegration, VirusTotalURLIntegration
+from .whois_lookup import WhoisIntegration
 
 __all__ = [
-    "PhoneLookup",
-    "ImageMetadata", 
-    "UsernameSearch",
-    "EmailOSINT",
-    "DomainRecon",
-    "ReverseImage",
+    "AnyRunIntegration",
     "BreachCheck",
-    "PeopleSearch",
     "BreachRelationships",
     "CryptoWallet",
-    "ExchangeTracker",
     "DarkWebDorks",
-    "VPNProxyCheck",
-    "WiFiGeolocation",
-    "TelegramOSINT",
+    "DNSIntegration",
+    "DomainRecon",
+    "EmailOSINT",
+    "ExchangeTracker",
+    "HIBPIntegration",
+    "HybridAnalysisIntegration",
+    "ImageMetadata",
+    "IPAPIIntegration",
+    "PeopleSearch",
+    "PhoneLookup",
+    "ReverseImage",
+    "ShodanIntegration",
     "SocialOmni",
-    "VehicleLookup",
-    "HistoricalData",
-    "PublicRecords",
-    "ShodanLookup",
-    "ScreenshotTools",
-    "MetadataCleaner",
-    "NetworkRecon",
-    "ThreatIntel",
-    "PersonalDataRemoval",
-    "SpecializedSearch",
-    "AudioForensics",
-    "QRBarcodeTools",
-    "PGPKeyLookup",
+    "TelegramOSINT",
+    "UsernameSearch",
+    "VirusTotalIntegration",
+    "VirusTotalURLIntegration",
+    "VPNProxyCheck",
+    "WhoisIntegration",
+    "WiFiGeolocation",
 ]

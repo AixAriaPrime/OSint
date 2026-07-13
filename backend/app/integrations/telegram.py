@@ -1,88 +1,75 @@
-from typing import Dict, Any
+from typing import Any, Dict
+
 
 class TelegramOSINT:
-    """Telegram intelligence"""
-    
+    """Telegram intelligence helper."""
+
     @staticmethod
     async def lookup(target: str, target_type: str = "username") -> Dict[str, Any]:
-        
         username = target.replace("@", "") if target_type == "username" else target
-        
-        return 
+        return {
             "target": target,
             "type": target_type,
             "username_lookup": {
-                "profile": f"https://t.me/{username",
+                "profile": f"https://t.me/{username}" if username else None,
                 "can_find": [
                     "Username",
-                    "Display name", 
+                    "Display name",
                     "Bio/About",
                     "Profile photo",
-                    "Premium status",
-                    "Last seen",
-                    "Bot status"
+                    "Bot flag",
                 ],
-                "tools": ["Apify Telegram Scraper", "Telegram API"]
+                "tools": ["Telegram Web", "Telegram API clients"],
             },
-            "phone_lookup": 
-                "can_check": "Is phone registered on Telegram?",
-                "cannot_do": "Get phone from username (blocked by privacy)",
-                "search": "Search breach data for phone number"
-            ,
+            "phone_lookup": {
+                "can_check": "Whether a number appears linked to a Telegram account.",
+                "cannot_do": "Recover private number from username without access.",
+                "search": "Cross-reference breach datasets for matching number.",
+            },
             "tools": [
-                "name": "TGStat", "url": "https://tgstat.com/",
-                "name": "Tgram", "url": "https://tgram.io/",
-                "name": "TelegramDB", "description": "Search engines"
-            ]
-        }# backend/app/integrations/social.py
-from typing import Dict, Any
+                {"name": "TGStat", "url": "https://tgstat.com/"},
+                {"name": "TgramSearch", "url": "https://tgstat.com/en/search"},
+            ],
+        }
+
 
 class SocialOmni:
-    """All social media platforms"""
-    
-    PLATFORMS = 
-        "twitter": {"url": "https://twitter.com/", "data": "Profile, tweets, followers",
-        "instagram": "url": "https://instagram.com/", "data": "Profile, posts, stories",
-        "facebook": "url": "https://facebook.com/", "data": "Profile, friends, photos",
-        "tiktok": "url": "https://tiktok.com/@", "data": "Profile, videos",
-        "linkedin": "url": "https://linkedin.com/in/", "data": "Profile, experience, connections",
-        "youtube": "url": "https://youtube.com/@", "data": "Channel, videos, subscribers",
-        "reddit": "url": "https://reddit.com/u/", "data": "Posts, karma, subreddits",
-        "discord": "url": "Check via Discord API", "data": "Profile, servers",
-        "whatsapp": "url": "https://wa.me/", "data": "Profile photo, status",
-        "snapchat": "url": "https://snapchat.com/add/", "data": "Snap score, stories",
-        "steam": "url": "https://steamcommunity.com/id/", "data": "Games, playtime, profile",
-        "twitch": "url": "https://twitch.tv/", "data": "Streams, followers, videos",
-        "github": "url": "https://github.com/", "data": "Repos, commits, followers",
-        "pinterest": "url": "https://pinterest.com/", "data": "Boards, pins",
-        "medium": "url": "https://medium.com/@", "data": "Articles, followers",
-        "quora": "url": "https://quora.com/profile/", "data": "Questions, answers",
-        "onlyfans": "url": "https://onlyfans.com/", "data": "Profile, pricing",
-        "patreon": "url": "https://patreon.com/", "data": "Tiers, earnings"
+    """Cross-platform username lookup helper."""
+
+    PLATFORMS = {
+        "twitter": {"url": "https://twitter.com/", "data": "Profile, posts, followers"},
+        "instagram": {"url": "https://instagram.com/", "data": "Profile, posts, stories"},
+        "facebook": {"url": "https://facebook.com/", "data": "Profile, friends, photos"},
+        "tiktok": {"url": "https://tiktok.com/@", "data": "Profile, videos"},
+        "linkedin": {"url": "https://linkedin.com/in/", "data": "Experience, connections"},
+        "youtube": {"url": "https://youtube.com/@", "data": "Channels, uploads"},
+        "reddit": {"url": "https://reddit.com/user/", "data": "Posts, comments, karma"},
+        "github": {"url": "https://github.com/", "data": "Repos, commits, followers"},
     }
-    
+
     @staticmethod
     async def search(target: str, platform: str = "all") -> Dict[str, Any]:
-        
         if platform == "all":
-            return 
+            return {
                 "target": target,
                 "platforms": [
-                    {"platform": p, "url": f"{v['url']target", "data": v['data"]}
+                    {"platform": p, "url": f"{v['url']}{target}", "data": v["data"]}
                     for p, v in SocialOmni.PLATFORMS.items()
                 ],
                 "cross_platform_tools": [
-                    "name": "Sherlock", "url": "https://github.com/sherlock-project/sherlock",
-                    "name": "Namechk", "url": "https://namechk.com",
-                    "name": "WhatsMyName", "url": "https://whatsmyname.app"
-                ]
+                    {"name": "Sherlock", "url": "https://github.com/sherlock-project/sherlock"},
+                    {"name": "Namechk", "url": "https://namechk.com/"},
+                    {"name": "WhatsMyName", "url": "https://whatsmyname.app/"},
+                ],
             }
-        else:
-            p = SocialOmni.PLATFORMS.get(platform.lower())
-            if p:
-                return 
-                    "target": target,
-                    "platform": platform,
-                    "url": f"{p['url']target",
-                    "data": p['data']
-      }
+
+        selected = SocialOmni.PLATFORMS.get(platform.lower())
+        if not selected:
+            return {"target": target, "error": f"Unsupported platform: {platform}"}
+
+        return {
+            "target": target,
+            "platform": platform.lower(),
+            "url": f"{selected['url']}{target}",
+            "data": selected["data"],
+        }
