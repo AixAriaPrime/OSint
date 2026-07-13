@@ -1,33 +1,32 @@
-from typing import Dict, Any, List
+from typing import Any
+
 
 class UsernameSearch:
-    """Cross-platform username search"""
-    
+    """Cross-platform username search."""
+
     PLATFORMS = [
-        "Twitter", "Instagram", "Facebook", "TikTok", "GitHub",
-        "Reddit", "YouTube", "Steam", "Twitch", "Pinterest",
-        "Medium", "Quora", "SoundCloud", "Vimeo", "Flickr",
-        "Keybase", "Mastodon", "Pastebin", "Snapchat", "Discord"
+        "twitter.com",
+        "instagram.com",
+        "facebook.com",
+        "tiktok.com/@",
+        "github.com",
+        "reddit.com/u",
+        "youtube.com/@",
+        "steamcommunity.com/id",
     ]
-    
+
     @staticmethod
-    async def search(username: str) -> Dict[str, Any]:
-        username = username.strip().replace("@", "")
-        
-        return 
-            "username": username,
+    async def search(username: str) -> dict[str, Any]:
+        normalized = username.strip().replace("@", "")
+        return {
+            "username": normalized,
             "platforms": [
-                {"platform": p, "url": f"https://{p.lower().com/username"}
-                for p in UsernameSearch.PLATFORMS
+                {"platform": platform, "url": f"https://{platform}/{normalized}"}
+                for platform in UsernameSearch.PLATFORMS
             ],
             "tools": [
-                "name": "Sherlock", "url": "https://github.com/sherlock-project/sherlock",
-                "name": "Namechk", "url": "https://namechk.com",
-                "name": "WhatsMyName", "url": "https://whatsmyname.app",
-                "name": "UserSearch", "url": "https://usersearch.co"
+                {"name": "Sherlock", "url": "https://github.com/sherlock-project/sherlock"},
+                {"name": "Namechk", "url": "https://namechk.com"},
+                {"name": "WhatsMyName", "url": "https://whatsmyname.app"},
             ],
-            "search_commands": 
-                "sherlock": f"python3 sherlock.py {username",
-                "whatsmyname": f"Visit https://whatsmyname.app and search for username"
-            }
-  }
+        }
