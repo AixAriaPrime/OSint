@@ -1,11 +1,11 @@
-from typing import Any, Dict
+from typing import Any
 
 
 class BreachCheck:
-    """Check if target appears in data breaches"""
+    """Check whether a target appears in known breach sources."""
 
     @staticmethod
-    async def check(target: str, target_type: str = "email") -> Dict[str, Any]:
+    async def check(target: str, target_type: str = "email") -> dict[str, Any]:
         return {
             "target": target,
             "type": target_type,

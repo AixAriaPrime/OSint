@@ -1,11 +1,11 @@
-from typing import Any, Dict
+from typing import Any
 
 
 class TelegramOSINT:
-    """Telegram intelligence"""
+    """Telegram intelligence."""
 
     @staticmethod
-    async def lookup(target: str, target_type: str = "username") -> Dict[str, Any]:
+    async def lookup(target: str, target_type: str = "username") -> dict[str, Any]:
         username = target.replace("@", "") if target_type == "username" else target
 
         return {
@@ -22,12 +22,10 @@ class TelegramOSINT:
                     "Last seen",
                     "Bot status",
                 ],
-                "tools": ["Apify Telegram Scraper", "Telegram API"],
             },
             "phone_lookup": {
                 "can_check": "Is phone registered on Telegram?",
                 "cannot_do": "Get phone from username (blocked by privacy)",
-                "search": "Search breach data for phone number",
             },
             "tools": [
                 {"name": "TGStat", "url": "https://tgstat.com/"},

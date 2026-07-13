@@ -1,14 +1,17 @@
-from typing import Any, Dict
+from typing import Any
 
 
 class CryptoWallet:
-    """Cryptocurrency wallet tracking"""
+    """Cryptocurrency wallet tracking."""
 
-    EXPLORERS = {
+    EXPLORERS: dict[str, list[dict[str, str]]] = {
         "BTC": [
             {"name": "Blockchair", "url": "https://blockchair.com/bitcoin/address/"},
             {"name": "Mempool", "url": "https://mempool.space/address/"},
-            {"name": "Blockchain.com", "url": "https://www.blockchain.com/explorer/addresses/btc/"},
+            {
+                "name": "Blockchain.com",
+                "url": "https://www.blockchain.com/explorer/addresses/btc/",
+            },
         ],
         "ETH": [
             {"name": "Etherscan", "url": "https://etherscan.io/address/"},
@@ -16,31 +19,29 @@ class CryptoWallet:
         ],
         "SOL": [
             {"name": "Solscan", "url": "https://solscan.io/address/"},
-            {"name": "Solana Beach", "url": "https://solanabeach.io/"},
+            {"name": "Solana Beach", "url": "https://solanabeach.io/address/"},
         ],
-        "TRX": [{"name": "Tronscan", "url": "https://tronscan.org/address/"}],
-        "XMR": [{"name": "XMRchain", "url": "https://xmrchain.org/address/"}],
+        "TRX": [{"name": "Tronscan", "url": "https://tronscan.org/#/address/"}],
+        "XMR": [{"name": "XMRchain", "url": "https://xmrchain.org/search?value="}],
     }
 
     @staticmethod
-    async def lookup(wallet_address: str, blockchain: str = "BTC") -> Dict[str, Any]:
-        explorers = CryptoWallet.EXPLORERS.get(blockchain.upper(), [])
+    async def lookup(wallet_address: str, blockchain: str = "BTC") -> dict[str, Any]:
+        chain = blockchain.upper()
+        explorers = CryptoWallet.EXPLORERS.get(chain, [])
 
         return {
             "wallet": wallet_address,
-            "blockchain": blockchain.upper(),
-            "explorers": [{"name": e["name"], "url": f"{e['url']}{wallet_address}"} for e in explorers],
+            "blockchain": chain,
+            "explorers": [
+                {"name": explorer["name"], "url": f"{explorer['url']}{wallet_address}"}
+                for explorer in explorers
+            ],
             "what_is_public": [
                 "Balance",
                 "All transactions",
                 "Transaction timestamps",
                 "Connected wallet addresses",
                 "Amounts transferred",
-            ],
-            "connection_mapping": [
-                "Direct transfers (wallet A ↔ wallet B)",
-                "Common counterparty (wallet interacts with both A and B)",
-                "Exchange deposits (→ KYC identity)",
-                "Cluster analysis (spending patterns)",
             ],
         }

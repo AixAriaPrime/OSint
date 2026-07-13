@@ -1,10 +1,10 @@
-from typing import Any, Dict
+from typing import Any
 
 
 class DarkWebDorks:
-    """Dark web search + Google dorks"""
+    """Dark web search + Google dorks."""
 
-    DORKS = {
+    DORKS: dict[str, list[str]] = {
         "email": [
             'site:pastebin.com "{target}" password',
             '"{target}" filetype:xls',
@@ -22,8 +22,9 @@ class DarkWebDorks:
     }
 
     @staticmethod
-    async def search(target: str, target_type: str = "email") -> Dict[str, Any]:
-        dorks = DarkWebDorks.DORKS.get(target_type, DarkWebDorks.DORKS["email"])
+    async def search(target: str, target_type: str = "email") -> dict[str, Any]:
+        templates = DarkWebDorks.DORKS.get(target_type, DarkWebDorks.DORKS["email"])
+        dorks = [template.format(target=target) for template in templates]
 
         return {
             "target": target,
@@ -32,15 +33,10 @@ class DarkWebDorks:
                 {"name": "GhostPaste", "url": "https://ghostpaste.me/"},
                 {"name": "JustPaste", "url": "https://justpaste.it/"},
             ],
-            "dorks": [d.format(target=target) for d in dorks],
+            "dorks": dorks,
             "search_engines": [
                 {"name": "IntelX", "url": "https://intelx.io/"},
                 {"name": "Darkdump", "url": "https://www.darkdump.io/"},
                 {"name": "Hive", "url": "https://www.hive.cool/"},
-            ],
-            "breach_db": [
-                {"name": "Dehashed", "url": "https://dehashed.com/"},
-                {"name": "Snusbase", "url": "https://snusbase.com/"},
-                {"name": "LeakCheck", "url": "https://leakcheck.io/"},
             ],
         }
