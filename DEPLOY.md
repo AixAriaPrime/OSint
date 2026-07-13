@@ -4,7 +4,7 @@
 
 ```bash
 cp .env.example .env
-# Fill in API keys in .env
+# Fill in API keys and change POSTGRES_PASSWORD / GRAFANA_PASSWORD in .env
 docker compose up --build -d
 ```
 
@@ -12,7 +12,10 @@ Services:
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8000
 - **API docs**: http://localhost:8000/docs
+- **PostgreSQL**: localhost:5432 (direct) / localhost:6432 (via PgBouncer)
 - **Redis**: localhost:6379
+- **Grafana dashboards**: http://localhost:3001  (default login: admin / admin)
+- **Loki** (log ingestion): localhost:3100
 
 ---
 
@@ -74,6 +77,18 @@ NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
 ## Health Check
 
 ```bash
-curl http://localhost:8000/api/health
+curl http://localhost:8000/health
 # {"status": "ok"}
 ```
+
+---
+
+## Docker Swarm Deployment
+
+To initialize Docker Swarm and deploy the application as a stack:
+
+```bash
+docker swarm init
+docker stack deploy -c docker-compose.yml omnitrace
+```
+

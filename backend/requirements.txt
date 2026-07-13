@@ -10,3 +10,4 @@ python-whois==0.9.4
 dnspython==2.6.1
 python-multipart==0.0.9
 slowapi==0.1.9
+loguru==0.7.2
