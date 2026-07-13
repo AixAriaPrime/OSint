@@ -18,10 +18,16 @@ class UsernameSearch:
     @staticmethod
     async def search(username: str) -> dict[str, Any]:
         normalized = username.strip().replace("@", "")
+        
+        def platform_url(platform: str) -> str:
+            if platform.endswith("@"):
+                return f"https://{platform}{normalized}"
+            return f"https://{platform}/{normalized}"
+
         return {
             "username": normalized,
             "platforms": [
-                {"platform": platform, "url": f"https://{platform}/{normalized}"}
+                {"platform": platform, "url": platform_url(platform)}
                 for platform in UsernameSearch.PLATFORMS
             ],
             "tools": [

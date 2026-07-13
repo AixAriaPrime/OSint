@@ -8,7 +8,7 @@ class PhoneLookup:
     @staticmethod
     async def lookup(phone_number: str) -> dict[str, Any]:
         clean = re.sub(r"\D", "", phone_number)
-        is_valid = len(clean) in {10, 11}
+        is_valid = len(clean) == 10 or (len(clean) == 11 and clean.startswith("1"))
         has_us_country_code = len(clean) == 11 and clean.startswith("1")
 
         country_code = None
