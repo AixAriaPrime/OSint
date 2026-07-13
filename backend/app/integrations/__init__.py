@@ -30,7 +30,7 @@ from .pgp import PGPKeyLookup
 
 __all__ = [
     "PhoneLookup",
-    "ImageMetadata", 
+    "ImageMetadata",
     "UsernameSearch",
     "EmailOSINT",
     "DomainRecon",
