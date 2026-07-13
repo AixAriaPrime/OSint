@@ -1,0 +1,78 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # ── Application logs (30-day retention) ───────────────────────────────────
+  - job_name: omnitrace-application
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: omnitrace
+          log_type: application
+          service: backend
+          __path__: /logs/app.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| (?P<level>\w+)\s*\|'
+      - labels:
+          level:
+      - timestamp:
+          source: ts
+          format: "2006-01-02 15:04:05"
+
+  # ── Audit logs (90-day retention) ─────────────────────────────────────────
+  - job_name: omnitrace-audit
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: omnitrace
+          log_type: audit
+          service: backend
+          __path__: /logs/audit.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| AUDIT \|'
+      - timestamp:
+          source: ts
+          format: "2006-01-02 15:04:05"
+
+  # ── Security events (1-year retention) ────────────────────────────────────
+  - job_name: omnitrace-security
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: omnitrace
+          log_type: security
+          service: backend
+          __path__: /logs/security.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| SECURITY \| (?P<level>\w+)\s*\|'
+      - labels:
+          level:
+      - timestamp:
+          source: ts
+          format: "2006-01-02 15:04:05"
+
+  # ── Deployment logs (14-day retention) ────────────────────────────────────
+  - job_name: omnitrace-deploy
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: omnitrace
+          log_type: deploy
+          service: backend
+          __path__: /logs/deploy.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| DEPLOY \|'
+      - timestamp:
+          source: ts
+          format: "2006-01-02 15:04:05"
