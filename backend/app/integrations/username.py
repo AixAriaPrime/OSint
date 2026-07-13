@@ -21,7 +21,14 @@ class UsernameSearch:
         return {
             "username": normalized,
             "platforms": [
-                {"platform": platform, "url": f"https://{platform}/{normalized}"}
+                {
+                    "platform": platform,
+                    "url": (
+                        f"https://{platform[:-2]}/@{normalized}"
+                        if platform.endswith("/@")
+                        else f"https://{platform}/{normalized}"
+                    ),
+                }
                 for platform in UsernameSearch.PLATFORMS
             ],
             "tools": [
