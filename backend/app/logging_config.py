@@ -11,6 +11,7 @@ Retention policies
 from __future__ import annotations
 
 import logging
+import os
 import sys
 
 from loguru import logger
@@ -26,6 +27,8 @@ def configure_logging() -> None:
     if _CONFIGURED:
         return
     _CONFIGURED = True
+
+    os.makedirs(LOG_DIR, exist_ok=True)
 
     # Remove the default Loguru sink so we can replace it.
     logger.remove()
