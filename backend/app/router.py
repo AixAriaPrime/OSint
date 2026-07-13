@@ -106,15 +106,13 @@ async def websocket_search(websocket: WebSocket) -> None:
             client_type = payload.get("force_type")
             if client_type is None:
                 client_type = payload.get("query_type")
-            query_type = None
+
+            query_type = detect_query_type(query)
             if client_type and client_type != "auto":
                 try:
                     query_type = QueryType(client_type)
                 except ValueError:
                     pass
-
-            if not query_type:
-                query_type = detect_query_type(query)
             integrations = _INTEGRATIONS_BY_TYPE.get(query_type, [])
             accumulated: list = []
 
