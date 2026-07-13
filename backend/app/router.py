@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
+from loguru import logger
 
 from .ai import generate_summary
 from .cache import cache_get, cache_set
@@ -20,7 +20,6 @@ from .integrations.virustotal import VirusTotalIntegration, VirusTotalURLIntegra
 from .integrations.whois_lookup import WhoisIntegration
 from .models import SearchRequest, SearchResponse
 
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -66,22 +65,27 @@ async def search(request: SearchRequest) -> SearchResponse:
         resp.cached = True
         return resp
 
-    integrations = _INTEGRATIONS_BY_TYPE.get(query_type, [])
-    tasks = [integration.run(query) for integration in integrations]
-    results = await asyncio.gather(*tasks)
+    try:
+        integrations = _INTEGRATIONS_BY_TYPE.get(query_type, [])
+        tasks = [integration.run(query) for integration in integrations]
+        results = await asyncio.gather(*tasks)
 
-    response = SearchResponse(
-        query=query,
-        query_type=query_type,
-        cached=False,
-        results=list(results),
-    )
+        response = SearchResponse(
+            query=query,
+            query_type=query_type,
+            cached=False,
+            results=list(results),
+        )
 
-    # AI summary
-    response.ai_summary = await generate_summary(response)
+        # AI summary
+        response.ai_summary = await generate_summary(response)
 
-    await cache_set(cache_key, response.model_dump())
-    return response
+        await cache_set(cache_key, response.model_dump())
+        logger.info("Search completed", query=query, sources=results)
+        return response
+    except Exception as e:
+        logger.error("API failure", error=str(e))
+        raise
 
 
 @router.get("/health")

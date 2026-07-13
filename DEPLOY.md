@@ -80,3 +80,15 @@ NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev
 curl http://localhost:8000/health
 # {"status": "ok"}
 ```
+
+---
+
+## Docker Swarm Deployment
+
+To initialize Docker Swarm and deploy the application as a stack:
+
+```bash
+docker swarm init
+docker stack deploy -c docker-compose.yml omnitrace
+```
+
