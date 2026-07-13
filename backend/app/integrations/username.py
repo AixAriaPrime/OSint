@@ -24,7 +24,7 @@ class UsernameSearch:
                 {
                     "platform": platform,
                     "url": (
-                        f"https://{platform.removesuffix('/@')}/@{normalized}"
+                        f"https://{platform[:-2]}/@{normalized}"
                         if platform.endswith("/@")
                         else f"https://{platform}/{normalized}"
                     ),
