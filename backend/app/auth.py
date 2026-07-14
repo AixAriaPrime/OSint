@@ -4,7 +4,7 @@ import hashlib
 import hmac
 from hmac import compare_digest
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import HTTPException, Request
 
 from .config import settings
 
