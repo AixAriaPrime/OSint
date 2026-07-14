@@ -1,6 +1,20 @@
 # OmniTrace – Ultimate Ethical OSINT SaaS
 
+[![CI](https://github.com/aixaria0/OSint/actions/workflows/ci.yml/badge.svg)](https://github.com/aixaria0/OSint/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black?logo=next.js)](frontend/)
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi)](backend/)
+
 > Powerful, AI-enhanced Open Source Intelligence platform. Search names, IPs, domains, phones, usernames — aggregate public data from Shodan, VirusTotal, and more with parallel processing, caching, and intelligent AI summaries.
+
+## Webapp Addresses
+
+| Service | Local (Docker Compose) | Description |
+|---|---|---|
+| **Frontend** | http://localhost:3000 | Next.js dashboard |
+| **Backend API** | http://localhost:8000 | FastAPI REST + WebSocket |
+| **API Docs** | http://localhost:8000/docs | Interactive Swagger UI |
+| **Grafana** | http://localhost:3001 | Observability dashboards |
 
 ## Features
 
@@ -25,8 +39,8 @@
 
 ```bash
 # 1. Clone and copy env
-git clone https://github.com/your-org/omnitrace
-cd omnitrace
+git clone https://github.com/aixaria0/OSint
+cd OSint
 cp .env.example .env
 # Edit .env and add your API keys
 
