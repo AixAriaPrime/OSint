@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import type { Node, Edge } from "reactflow";
+import ResultCard from "@/components/ResultCard";
+import AIPanel from "@/components/AIPanel";
 
 const GraphView = dynamic(() => import("@/components/GraphView"), { ssr: false });
 
@@ -22,6 +24,7 @@ interface SearchResponse {
 }
 
 type WsStatus = "connecting" | "connected" | "disconnected" | "error";
+type LoadingState = "idle" | "loading" | "done" | "error";
 
 const WS_STATUS_CLASS: Record<WsStatus, string> = {
   connecting: "text-yellow-400",
@@ -123,6 +126,7 @@ export default function OmniTraceDashboard() {
   const [graphNodes, setGraphNodes] = useState<Node[]>([]);
   const [graphEdges, setGraphEdges] = useState<Edge[]>([]);
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
+  const [loadingState, setLoadingState] = useState<LoadingState>("idle");
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -148,8 +152,9 @@ export default function OmniTraceDashboard() {
         const { nodes, edges } = buildGraph(data);
         setGraphNodes(nodes);
         setGraphEdges(edges);
+        setLoadingState("done");
       };
-      ws.onerror = () => setWsStatus("error");
+      ws.onerror = () => { setWsStatus("error"); setLoadingState("error"); };
       ws.onclose = () => {
         setWsStatus("disconnected");
         if (reconnectAttempts < maxAttempts) {
@@ -173,6 +178,9 @@ export default function OmniTraceDashboard() {
     const q = query.trim();
     if (!q) return;
 
+    setLoadingState("loading");
+    setResults(null);
+
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ query: q, query_type: "auto" }));
     } else {
@@ -189,14 +197,16 @@ export default function OmniTraceDashboard() {
         const { nodes, edges } = buildGraph(data);
         setGraphNodes(nodes);
         setGraphEdges(edges);
+        setLoadingState("done");
       } catch (e) {
         console.error("Search failed:", e);
+        setLoadingState("error");
       }
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-8">
+    <div className="min-h-screen bg-slate-950 text-white p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-bold">OmniTrace Intelligence Platform</h1>
         <span className={`text-sm font-medium ${WS_STATUS_CLASS[wsStatus]}`}>
@@ -210,49 +220,60 @@ export default function OmniTraceDashboard() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
           placeholder="Search IP, domain, email, hash…"
         />
         <button
           onClick={handleSearch}
-          disabled={!query.trim()}
-          className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-8 py-3 rounded-lg font-medium transition"
+          disabled={!query.trim() || loadingState === "loading"}
+          className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-8 py-3 rounded-lg font-medium transition"
         >
-          Search &amp; Analyze
+          {loadingState === "loading" ? "Analyzing..." : "Search & Analyze"}
         </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Results Panel */}
-        <div className="lg:col-span-1 bg-gray-900 rounded-xl p-6">
-          <h2 className="text-xl font-semibold mb-4">Intelligence Results</h2>
-          {results ? (
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2 text-sm text-gray-400">
-                <span className="bg-blue-900/40 text-blue-300 px-2 py-0.5 rounded font-mono">
+        <div className="lg:col-span-1 bg-slate-900 rounded-xl p-6 space-y-4">
+          <h2 className="text-xl font-semibold">Intelligence Results</h2>
+
+          {loadingState === "loading" && (
+            <p className="text-slate-400 text-sm animate-pulse">Querying intelligence sources...</p>
+          )}
+
+          {loadingState === "error" && (
+            <p className="text-red-400 text-sm">Search failed. Check the API connection and try again.</p>
+          )}
+
+          {results && (
+            <>
+              <div className="flex flex-wrap gap-2 text-sm text-slate-400">
+                <span className="bg-brand-900/40 text-brand-300 px-2 py-0.5 rounded font-mono">
                   {results.query_type}
                 </span>
                 {results.cached && (
-                  <span className="bg-gray-700 px-2 py-0.5 rounded">cached</span>
+                  <span className="bg-slate-700 px-2 py-0.5 rounded">cached</span>
                 )}
                 <span className="ml-auto">{results.results.length} sources</span>
               </div>
-              {results.ai_summary && (
-                <div className="bg-blue-950/40 border border-blue-800 rounded-lg p-3 text-sm text-blue-200">
-                  {results.ai_summary}
-                </div>
-              )}
-              <pre className="text-xs text-gray-300 overflow-auto max-h-80 bg-gray-800 rounded p-3">
-                {JSON.stringify(results.results, null, 2)}
-              </pre>
-            </div>
-          ) : (
-            <p className="text-gray-500 text-sm">Run a search to see results here.</p>
+
+              {results.ai_summary && <AIPanel summary={results.ai_summary} />}
+
+              <div className="space-y-3">
+                {results.results.map((r) => (
+                  <ResultCard key={r.source} result={r} />
+                ))}
+              </div>
+            </>
+          )}
+
+          {loadingState === "idle" && (
+            <p className="text-slate-500 text-sm">Run a search to see results here.</p>
           )}
         </div>
 
         {/* Graph Visualization */}
-        <div className="lg:col-span-2 bg-gray-900 rounded-xl p-6 h-[600px]">
+        <div className="lg:col-span-2 bg-slate-900 rounded-xl p-6 h-[600px]">
           <h2 className="text-xl font-semibold mb-4">Relationship Graph</h2>
           <div className="h-[520px] rounded-lg overflow-hidden">
             <GraphView nodes={graphNodes} edges={graphEdges} />
@@ -261,9 +282,9 @@ export default function OmniTraceDashboard() {
       </div>
 
       {/* Sandbox Analysis */}
-      <div className="mt-8 bg-gray-900 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-4">Submit for Sandbox Analysis</h2>
-        <p className="text-gray-500 text-sm">
+      <div className="mt-8 bg-slate-900 rounded-xl p-6">
+        <h2 className="text-xl font-semibold mb-2">Submit for Sandbox Analysis</h2>
+        <p className="text-slate-500 text-sm">
           Upload a file or paste a URL/hash to submit for dynamic sandbox analysis
           via Hybrid Analysis or ANY.RUN.
         </p>
