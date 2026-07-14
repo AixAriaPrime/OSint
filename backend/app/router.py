@@ -132,12 +132,13 @@ async def websocket_search(websocket: WebSocket) -> None:
                     ).model_dump(mode="json")
                 )
 
-            # Final message with AI summary
+            # Final message with AI summary and done flag
             response = SearchResponse(
                 query=query,
                 query_type=query_type,
                 cached=False,
                 results=accumulated,
+                done=True,
             )
             response.ai_summary = await generate_summary(response)
             await websocket.send_json(response.model_dump(mode="json"))

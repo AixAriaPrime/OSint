@@ -21,6 +21,7 @@ interface SearchResponse {
   cached: boolean;
   results: IntegrationResult[];
   ai_summary: string | null;
+  done: boolean;
 }
 
 type WsStatus = "connecting" | "connected" | "disconnected" | "error";
@@ -152,11 +153,12 @@ export default function OmniTraceDashboard() {
         const { nodes, edges } = buildGraph(data);
         setGraphNodes(nodes);
         setGraphEdges(edges);
-        setLoadingState("done");
+        if (data.done) {
+          setLoadingState("done");
+        }
       };
       ws.onerror = () => {
         setWsStatus("error");
-        setLoadingState("error");
       };
       ws.onclose = () => {
         setWsStatus("disconnected");
@@ -179,10 +181,12 @@ export default function OmniTraceDashboard() {
 
   const handleSearch = async () => {
     const q = query.trim();
-    if (!q) return;
+    if (!q || loadingState === "loading") return;
 
     setLoadingState("loading");
     setResults(null);
+    setGraphNodes([]);
+    setGraphEdges([]);
 
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ query: q, query_type: "auto" }));
@@ -195,6 +199,7 @@ export default function OmniTraceDashboard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query: q, query_type: "auto" }),
         });
+        if (!res.ok) throw new Error(`Search request failed: ${res.status}`);
         const data: SearchResponse = await res.json();
         setResults(data);
         const { nodes, edges } = buildGraph(data);
@@ -245,7 +250,7 @@ export default function OmniTraceDashboard() {
           )}
 
           {loadingState === "error" && (
-            <p className="text-red-400 text-sm">Search failed. Check the API connection and try again.</p>
+            <p role="alert" className="text-red-400 text-sm">Search failed. Check the API connection and try again.</p>
           )}
 
           {results && (

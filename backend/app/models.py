@@ -24,3 +24,4 @@ class SearchResponse(BaseModel):
     cached: bool = False
     results: list[IntegrationResult] = []
     ai_summary: Optional[str] = None
+    done: bool = False
