@@ -28,6 +28,10 @@ type WsEvent =
   | { type: "complete"; payload: SearchResponse }
   | { type: "error"; error?: string };
 
+const WS_EVENT_TYPES = new Set(["partial", "complete", "error"]);
+
+const DEFAULT_SEARCH_ERROR = "Search failed. Check the API connection and try again.";
+
 type WsStatus = "connecting" | "connected" | "disconnected" | "error";
 type LoadingState = "idle" | "loading" | "done" | "error";
 
@@ -155,19 +159,20 @@ export default function OmniTraceDashboard() {
       ws.onmessage = (event) => {
         const message: WsEvent | SearchResponse = JSON.parse(event.data);
 
-        if ("type" in message) {
-          if (message.type === "error") {
-            setSearchError(message.error || "Search failed. Check the API connection and try again.");
+        if ("type" in message && WS_EVENT_TYPES.has(message.type as string)) {
+          const wsEvent = message as WsEvent;
+          if (wsEvent.type === "error") {
+            setSearchError(wsEvent.error || DEFAULT_SEARCH_ERROR);
             setLoadingState("error");
             return;
           }
 
-          setResults(message.payload);
-          const { nodes, edges } = buildGraph(message.payload);
+          setResults(wsEvent.payload);
+          const { nodes, edges } = buildGraph(wsEvent.payload);
           setGraphNodes(nodes);
           setGraphEdges(edges);
 
-          if (message.type === "complete") {
+          if (wsEvent.type === "complete") {
             setLoadingState("done");
           }
 
@@ -175,10 +180,12 @@ export default function OmniTraceDashboard() {
         }
 
         // Backward-compatible fallback for older backend payloads.
-        setResults(message);
-        const { nodes, edges } = buildGraph(message);
+        const legacy = message as SearchResponse;
+        setResults(legacy);
+        const { nodes, edges } = buildGraph(legacy);
         setGraphNodes(nodes);
         setGraphEdges(edges);
+        setLoadingState("done");
       };
       ws.onerror = () => {
         setWsStatus("error");
@@ -247,7 +254,7 @@ export default function OmniTraceDashboard() {
       setLoadingState("done");
     } catch (e) {
       console.error("Search failed:", e);
-      setSearchError(e instanceof Error ? e.message : "Search failed. Check the API connection and try again.");
+      setSearchError(e instanceof Error ? e.message : DEFAULT_SEARCH_ERROR);
       setLoadingState("error");
     }
   };
