@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     hybrid_analysis_api_key: Optional[str] = None
     anyrun_api_key: Optional[str] = None
 
+    # Request signing — set to enable HMAC verification on POST /api/search
+    hmac_secret: Optional[str] = None
+
     # LiteLLM model (e.g. "gpt-4o-mini", "claude-3-haiku-20240307", "ollama/llama3")
     ai_model: str = "gpt-4o-mini"
 
