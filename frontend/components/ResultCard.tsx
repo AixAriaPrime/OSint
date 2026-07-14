@@ -30,6 +30,7 @@ const sourceMeta: Record<string, { icon: typeof Database; className: string; lab
   whois: { icon: FileText, className: "text-yellow-300 bg-yellow-900/20 border-yellow-700/50", label: "WHOIS FileText" },
   hibp: { icon: AlertTriangle, className: "text-orange-300 bg-orange-900/30 border-orange-700/50", label: "HIBP AlertTriangle" },
 };
+const MAX_LIST_ITEMS = 10;
 
 function nonNullFieldCount(data: Record<string, unknown> | null): number {
   if (!data) return 0;
@@ -49,9 +50,13 @@ export default function ResultCard({ result }: { result: IntegrationResult }) {
   const fieldCount = useMemo(() => nonNullFieldCount(result.data), [result.data]);
 
   const copyJson = async () => {
-    await navigator.clipboard.writeText(JSON.stringify(result.data, null, 2));
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1200);
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(result.data, null, 2));
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
@@ -115,10 +120,10 @@ function DataTable({ data }: { data: Record<string, unknown> }) {
               <td className="py-1.5 text-slate-200 font-mono break-all">
                 {Array.isArray(value) ? (
                   <ul className="space-y-0.5">
-                    {value.slice(0, 10).map((v, i) => (
+                    {value.slice(0, MAX_LIST_ITEMS).map((v, i) => (
                       <li key={i}>{String(v)}</li>
                     ))}
-                    {value.length > 10 && <li className="text-slate-500">…+{value.length - 10} more</li>}
+                    {value.length > MAX_LIST_ITEMS && <li className="text-slate-500">…+{value.length - MAX_LIST_ITEMS} more</li>}
                   </ul>
                 ) : typeof value === "object" ? (
                   <pre className="whitespace-pre-wrap">{JSON.stringify(value, null, 2)}</pre>

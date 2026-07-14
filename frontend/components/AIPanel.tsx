@@ -32,9 +32,13 @@ export default function AIPanel({ summary, streaming = false }: AIPanelProps) {
   const content = useMemo(() => (streaming ? shown : summary), [shown, streaming, summary]);
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(summary);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1200);
+    try {
+      await navigator.clipboard.writeText(summary);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (

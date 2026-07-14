@@ -22,6 +22,7 @@ const SOURCE_STYLE: Record<string, { emoji: string; color: string; border: strin
   whois: { emoji: "📄", color: "#78350f", border: "#facc15" },
   hibp: { emoji: "⚠️", color: "#9a3412", border: "#fdba74" },
 };
+const RADIAL_DISTANCE = 240;
 
 function sourceUi(source: string) {
   const key = source.toLowerCase();
@@ -51,8 +52,8 @@ export function buildGraph(data: SearchResponse): { nodes: Node[]; edges: Edge[]
 
   successful.forEach((result, i) => {
     const angle = ((2 * Math.PI) / total) * i - Math.PI / 2;
-    const sx = Math.round(Math.cos(angle) * 240);
-    const sy = Math.round(Math.sin(angle) * 240);
+    const sx = Math.round(Math.cos(angle) * RADIAL_DISTANCE);
+    const sy = Math.round(Math.sin(angle) * RADIAL_DISTANCE);
     const sourceId = `src-${result.source}`;
     const ui = sourceUi(result.source);
 

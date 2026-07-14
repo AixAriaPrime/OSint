@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactFlow, {
   type Node,
   type Edge,
@@ -20,18 +20,28 @@ interface GraphViewProps {
   nodes: Node[];
   edges: Edge[];
 }
+const FIT_VIEW_PADDING = 0.2;
 
 function GraphCanvas({ nodes, edges }: GraphViewProps) {
   const [flowNodes, setFlowNodes, onNodesChange] = useNodesState(nodes);
   const [flowEdges, setFlowEdges, onEdgesChange] = useEdgesState(edges);
   const [selected, setSelected] = useState<Node | null>(null);
   const reactFlow = useReactFlow();
+  const pendingFrame = useRef<number | null>(null);
 
   useEffect(() => {
     setFlowNodes(nodes);
     setFlowEdges(edges);
     setSelected(null);
   }, [nodes, edges, setFlowNodes, setFlowEdges]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingFrame.current !== null) {
+        window.cancelAnimationFrame(pendingFrame.current);
+      }
+    };
+  }, []);
 
   const initialLayout = useMemo(() => ({ nodes, edges }), [nodes, edges]);
 
@@ -43,7 +53,10 @@ function GraphCanvas({ nodes, edges }: GraphViewProps) {
     setFlowNodes(initialLayout.nodes);
     setFlowEdges(initialLayout.edges);
     setSelected(null);
-    window.setTimeout(() => reactFlow.fitView({ padding: 0.2 }), 0);
+    if (pendingFrame.current !== null) {
+      window.cancelAnimationFrame(pendingFrame.current);
+    }
+    pendingFrame.current = window.requestAnimationFrame(() => reactFlow.fitView({ padding: FIT_VIEW_PADDING }));
   };
 
   return (
@@ -59,7 +72,7 @@ function GraphCanvas({ nodes, edges }: GraphViewProps) {
           attributionPosition="bottom-right"
         >
           <Panel position="top-right" className="flex gap-1">
-            <button type="button" onClick={() => reactFlow.fitView({ padding: 0.2 })} className="px-2 py-1 text-xs rounded bg-slate-900/90 border border-slate-700 hover:bg-slate-700">
+            <button type="button" onClick={() => reactFlow.fitView({ padding: FIT_VIEW_PADDING })} className="px-2 py-1 text-xs rounded bg-slate-900/90 border border-slate-700 hover:bg-slate-700">
               Fit View
             </button>
             <button type="button" onClick={resetLayout} className="px-2 py-1 text-xs rounded bg-slate-900/90 border border-slate-700 hover:bg-slate-700">

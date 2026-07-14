@@ -33,6 +33,11 @@ const WS_STATUS: Record<WsStatus, string> = {
 };
 
 const HISTORY_KEY = "omnitrace:search-history";
+const MAX_RECONNECT_DELAY_MS = 15000;
+
+function generateShortId(length = 6): string {
+  return Math.random().toString(36).slice(2, 2 + length);
+}
 
 function detectQueryType(query: string): QueryKind {
   const q = query.trim();
@@ -83,7 +88,7 @@ export default function OmniTraceDashboard() {
   const queryType = useMemo(() => detectQueryType(query), [query]);
 
   const pushToast = useCallback((message: string) => {
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const id = `${Date.now()}-${generateShortId()}`;
     setToasts((prev) => [...prev, { id, message }]);
     window.setTimeout(() => {
       setToasts((prev) => prev.filter((item) => item.id !== id));
@@ -98,7 +103,8 @@ export default function OmniTraceDashboard() {
       setGraphEdges(graph.edges);
       if (payload.cached) pushToast("Showing cached results.");
       setHistory((prev) => {
-        const next = [{ query: payload.query, type: detectQueryType(payload.query) }, ...prev.filter((entry) => entry.query !== payload.query)].slice(0, 10);
+        const detectedType = detectQueryType(payload.query);
+        const next = [{ query: payload.query, type: detectedType }, ...prev.filter((entry) => entry.query !== payload.query)].slice(0, 10);
         localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
         return next;
       });
@@ -169,7 +175,7 @@ export default function OmniTraceDashboard() {
       ws.onclose = () => {
         setWsStatus("disconnected");
         if (reconnectAttempts < maxAttempts) {
-          const delay = baseDelay * 2 ** reconnectAttempts;
+          const delay = Math.min(baseDelay * 2 ** reconnectAttempts, MAX_RECONNECT_DELAY_MS);
           pushToast(`WebSocket reconnecting in ${Math.round(delay / 1000)}s (attempt ${reconnectAttempts + 1}/${maxAttempts})`);
           reconnectTimer = setTimeout(connect, delay);
           reconnectAttempts += 1;
@@ -245,7 +251,7 @@ export default function OmniTraceDashboard() {
   const submitSandbox = () => {
     const hasContent = sandboxValue.trim() || sandboxFile;
     if (!hasContent) return;
-    const jobId = `SAN-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const jobId = `SAN-${generateShortId().toUpperCase()}`;
     pushToast(`Submitted! Job ID: ${jobId}`);
     setSandboxValue("");
     setSandboxFile(null);
@@ -280,7 +286,10 @@ export default function OmniTraceDashboard() {
             <span className={`inline-flex items-center gap-2 rounded-full border border-slate-600 px-3 py-1 text-xs font-medium bg-white/80 dark:bg-slate-900/70 ${WS_STATUS[wsStatus]}`}>
               {wsStatus === "connected" ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
               <span className="relative inline-flex h-2 w-2">
-                <span className={`absolute inline-flex h-full w-full rounded-full ${wsStatus === "connected" ? "bg-emerald-400" : "bg-amber-400"} opacity-75 animate-ping`} />
+                <span
+                  aria-label={`WebSocket ${wsStatus}`}
+                  className={`absolute inline-flex h-full w-full rounded-full ${wsStatus === "connected" ? "bg-emerald-400" : "bg-amber-400"} opacity-75 animate-ping`}
+                />
                 <span className={`relative inline-flex rounded-full h-2 w-2 ${wsStatus === "connected" ? "bg-emerald-500" : "bg-amber-500"}`} />
               </span>
               WS {wsStatus}
@@ -430,7 +439,15 @@ export default function OmniTraceDashboard() {
               setIsDragActive(false);
               onFileSelect(event.dataTransfer.files);
             }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
             onClick={() => fileInputRef.current?.click()}
+            role="button"
+            tabIndex={0}
             className={`rounded-lg border-2 border-dashed p-4 text-sm cursor-pointer transition ${
               isDragActive ? "border-blue-500 bg-blue-500/10" : "border-slate-400/50 hover:border-blue-500/60"
             }`}

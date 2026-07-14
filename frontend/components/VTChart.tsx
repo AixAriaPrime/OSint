@@ -38,7 +38,7 @@ export default function VTChart({ data }: Props) {
   const chartData = useMemo(
     () =>
       Object.entries(data)
-        .filter(([k, v]) => k in COLORS && typeof v === "number" && v >= 0)
+        .filter(([k, v]) => k in COLORS && typeof v === "number" && v > 0)
         .map(([name, value]) => ({ name, value })),
     [data],
   );
