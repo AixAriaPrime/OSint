@@ -159,10 +159,10 @@ export default function OmniTraceDashboard() {
       ws.onmessage = (event) => {
         const message: WsEvent | SearchResponse = JSON.parse(event.data);
 
-        if ("type" in message && WS_EVENT_TYPES.has(message.type as string)) {
+        if ("type" in message && typeof message.type === "string" && WS_EVENT_TYPES.has(message.type)) {
           const wsEvent = message as WsEvent;
           if (wsEvent.type === "error") {
-            setSearchError(wsEvent.error || DEFAULT_SEARCH_ERROR);
+            setSearchError(wsEvent.error ?? DEFAULT_SEARCH_ERROR);
             setLoadingState("error");
             return;
           }
