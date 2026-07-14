@@ -195,6 +195,7 @@ export default function OmniTraceDashboard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query: q, query_type: "auto" }),
         });
+        if (!res.ok) throw new Error(`Search request failed: ${res.status} ${res.statusText}`);
         const data: SearchResponse = await res.json();
         setResults(data);
         const { nodes, edges } = buildGraph(data);
