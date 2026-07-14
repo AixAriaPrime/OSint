@@ -154,7 +154,10 @@ export default function OmniTraceDashboard() {
         setGraphEdges(edges);
         setLoadingState("done");
       };
-      ws.onerror = () => { setWsStatus("error"); setLoadingState("error"); };
+      ws.onerror = () => {
+        setWsStatus("error");
+        setLoadingState("error");
+      };
       ws.onclose = () => {
         setWsStatus("disconnected");
         if (reconnectAttempts < maxAttempts) {
@@ -283,7 +286,7 @@ export default function OmniTraceDashboard() {
 
       {/* Sandbox Analysis */}
       <div className="mt-8 bg-slate-900 rounded-xl p-6">
-        <h2 className="text-xl font-semibold mb-2">Submit for Sandbox Analysis</h2>
+        <h2 className="text-xl font-semibold mb-4">Submit for Sandbox Analysis</h2>
         <p className="text-slate-500 text-sm">
           Upload a file or paste a URL/hash to submit for dynamic sandbox analysis
           via Hybrid Analysis or ANY.RUN.

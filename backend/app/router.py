@@ -4,8 +4,11 @@ import asyncio
 import hashlib
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import Depends
 from fastapi.responses import JSONResponse
 from loguru import logger
+
+from .auth import require_hmac
 
 from .ai import generate_summary
 from .cache import cache_get, cache_set
@@ -52,7 +55,7 @@ _INTEGRATIONS_BY_TYPE: dict[QueryType, list] = {
 }
 
 
-@router.post("/search", response_model=SearchResponse)
+@router.post("/search", response_model=SearchResponse, dependencies=[Depends(require_hmac)])
 async def search(request: SearchRequest) -> SearchResponse:
     query = request.query.strip()
     query_type = request.force_type or detect_query_type(query)
