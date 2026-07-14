@@ -11,3 +11,4 @@ dnspython==2.6.1
 python-multipart==0.0.9
 slowapi==0.1.9
 hvac==2.4.0
+loguru==0.7.2
