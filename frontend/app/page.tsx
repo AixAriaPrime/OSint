@@ -231,7 +231,7 @@ export default function OmniTraceDashboard() {
           disabled={!query.trim() || loadingState === "loading"}
           className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-8 py-3 rounded-lg font-medium transition"
         >
-          {loadingState === "loading" ? "Analyzing..." : "Search & Analyze"}
+          {loadingState === "loading" ? "Analyzing..." : <>Search &amp; Analyze</>}
         </button>
       </div>
 
