@@ -107,13 +107,13 @@ _INTEGRATIONS_BY_TYPE: dict[QueryType, list[BaseIntegration]] = {
         WhoisIntegration(),
         VirusTotalIntegration(),
         FunctionIntegration("domain_recon", _domain_recon),
-        FunctionIntegration("darkweb_domain", _darkweb_domain),
+        FunctionIntegration("domain_darkweb", _darkweb_domain),
     ],
     QueryType.EMAIL: [
         HIBPIntegration(),
-        FunctionIntegration("email_osint", _email_osint),
-        FunctionIntegration("breach_email", _breach_email),
-        FunctionIntegration("darkweb_email", _darkweb_email),
+        FunctionIntegration("email_lookup", _email_osint),
+        FunctionIntegration("email_breach", _breach_email),
+        FunctionIntegration("email_darkweb", _darkweb_email),
     ],
     QueryType.HASH: [
         VirusTotalIntegration(),
@@ -125,13 +125,13 @@ _INTEGRATIONS_BY_TYPE: dict[QueryType, list[BaseIntegration]] = {
     ],
     QueryType.PHONE: [
         FunctionIntegration("phone_lookup", _phone_lookup),
-        FunctionIntegration("breach_phone", _breach_phone),
-        FunctionIntegration("darkweb_phone", _darkweb_phone),
-        FunctionIntegration("telegram_phone", _telegram_phone),
+        FunctionIntegration("phone_breach", _breach_phone),
+        FunctionIntegration("phone_darkweb", _darkweb_phone),
+        FunctionIntegration("phone_telegram", _telegram_phone),
     ],
     QueryType.USERNAME: [
-        FunctionIntegration("username_search", _username_search),
-        FunctionIntegration("telegram_username", _telegram_username),
+        FunctionIntegration("username_lookup", _username_search),
+        FunctionIntegration("username_telegram", _telegram_username),
     ],
     QueryType.UNKNOWN: [],
 }
