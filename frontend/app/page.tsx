@@ -23,6 +23,15 @@ interface SearchResponse {
   ai_summary: string | null;
 }
 
+type WsEvent =
+  | { type: "partial"; payload: SearchResponse }
+  | { type: "complete"; payload: SearchResponse }
+  | { type: "error"; error?: string };
+
+const WS_EVENT_TYPES = new Set(["partial", "complete", "error"]);
+
+const DEFAULT_SEARCH_ERROR = "Search failed. Check the API connection and try again.";
+
 type WsStatus = "connecting" | "connected" | "disconnected" | "error";
 type LoadingState = "idle" | "loading" | "done" | "error";
 
@@ -127,6 +136,7 @@ export default function OmniTraceDashboard() {
   const [graphEdges, setGraphEdges] = useState<Edge[]>([]);
   const [wsStatus, setWsStatus] = useState<WsStatus>("connecting");
   const [loadingState, setLoadingState] = useState<LoadingState>("idle");
+  const [searchError, setSearchError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -147,16 +157,38 @@ export default function OmniTraceDashboard() {
         reconnectAttempts = 0;
       };
       ws.onmessage = (event) => {
-        const data: SearchResponse = JSON.parse(event.data);
-        setResults(data);
-        const { nodes, edges } = buildGraph(data);
+        const message: WsEvent | SearchResponse = JSON.parse(event.data);
+
+        if ("type" in message && typeof message.type === "string" && WS_EVENT_TYPES.has(message.type)) {
+          const wsEvent = message as WsEvent;
+          if (wsEvent.type === "error") {
+            setSearchError(wsEvent.error ?? DEFAULT_SEARCH_ERROR);
+            setLoadingState("error");
+            return;
+          }
+
+          setResults(wsEvent.payload);
+          const { nodes, edges } = buildGraph(wsEvent.payload);
+          setGraphNodes(nodes);
+          setGraphEdges(edges);
+
+          if (wsEvent.type === "complete") {
+            setLoadingState("done");
+          }
+
+          return;
+        }
+
+        // Backward-compatible fallback for older backend payloads.
+        const legacy = message as SearchResponse;
+        setResults(legacy);
+        const { nodes, edges } = buildGraph(legacy);
         setGraphNodes(nodes);
         setGraphEdges(edges);
         setLoadingState("done");
       };
       ws.onerror = () => {
         setWsStatus("error");
-        setLoadingState("error");
       };
       ws.onclose = () => {
         setWsStatus("disconnected");
@@ -179,32 +211,51 @@ export default function OmniTraceDashboard() {
 
   const handleSearch = async () => {
     const q = query.trim();
-    if (!q) return;
+    if (!q || loadingState === "loading") return;
 
     setLoadingState("loading");
+    setSearchError(null);
     setResults(null);
+    setGraphNodes([]);
+    setGraphEdges([]);
 
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ query: q, query_type: "auto" }));
-    } else {
-      // REST fallback when WebSocket is unavailable
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${apiUrl}/search`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: q, query_type: "auto" }),
-        });
-        const data: SearchResponse = await res.json();
-        setResults(data);
-        const { nodes, edges } = buildGraph(data);
-        setGraphNodes(nodes);
-        setGraphEdges(edges);
-        setLoadingState("done");
-      } catch (e) {
-        console.error("Search failed:", e);
-        setLoadingState("error");
+      return;
+    }
+
+    // REST fallback when WebSocket is unavailable
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: q, query_type: "auto" }),
+      });
+
+      if (!res.ok) {
+        let message = `Search failed with status ${res.status}`;
+        try {
+          const errorData = await res.json();
+          if (errorData?.detail && typeof errorData.detail === "string") {
+            message = errorData.detail;
+          }
+        } catch {
+          // ignore JSON parse failure for error bodies
+        }
+        throw new Error(message);
       }
+
+      const data: SearchResponse = await res.json();
+      setResults(data);
+      const { nodes, edges } = buildGraph(data);
+      setGraphNodes(nodes);
+      setGraphEdges(edges);
+      setLoadingState("done");
+    } catch (e) {
+      console.error("Search failed:", e);
+      setSearchError(e instanceof Error ? e.message : DEFAULT_SEARCH_ERROR);
+      setLoadingState("error");
     }
   };
 
@@ -222,7 +273,12 @@ export default function OmniTraceDashboard() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              void handleSearch();
+            }
+          }}
           className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
           placeholder="Search IP, domain, email, hash…"
         />
@@ -244,14 +300,16 @@ export default function OmniTraceDashboard() {
             <p className="text-slate-400 text-sm animate-pulse">Querying intelligence sources...</p>
           )}
 
-          {loadingState === "error" && (
-            <p className="text-red-400 text-sm">Search failed. Check the API connection and try again.</p>
+          {loadingState === "error" && searchError && (
+            <p role="alert" aria-live="assertive" className="text-red-400 text-sm">
+              {searchError}
+            </p>
           )}
 
           {results && (
             <>
               <div className="flex flex-wrap gap-2 text-sm text-slate-400">
-                <span className="bg-brand-900/40 text-brand-300 px-2 py-0.5 rounded font-mono">
+                <span className="bg-brand-900/40 text-brand-100 px-2 py-0.5 rounded font-mono">
                   {results.query_type}
                 </span>
                 {results.cached && (
