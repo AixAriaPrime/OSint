@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+from collections.abc import Awaitable, Callable
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi import Depends
@@ -14,20 +15,88 @@ from .ai import generate_summary
 from .cache import cache_get, cache_set
 from .detector import QueryType, detect_query_type
 from .integrations.anyrun import AnyRunIntegration
+from .integrations.base import BaseIntegration
+from .integrations.breach import BreachCheck
+from .integrations.darkweb import DarkWebDorks
 from .integrations.dns_lookup import DNSIntegration
+from .integrations.domain import DomainRecon
+from .integrations.email import EmailOSINT
 from .integrations.hibp import HIBPIntegration
 from .integrations.hybrid_analysis import HybridAnalysisIntegration
 from .integrations.ipapi import IPAPIIntegration
+from .integrations.phone import PhoneLookup
 from .integrations.shodan import ShodanIntegration
+from .integrations.telegram import TelegramOSINT
+from .integrations.username import UsernameSearch
 from .integrations.virustotal import VirusTotalIntegration, VirusTotalURLIntegration
 from .integrations.whois_lookup import WhoisIntegration
-from .models import SearchRequest, SearchResponse
+from .models import IntegrationResult, SearchRequest, SearchResponse
 
 
 router = APIRouter()
 
+
+class FunctionIntegration(BaseIntegration):
+    def __init__(
+        self,
+        name: str,
+        handler: Callable[[str], Awaitable[dict]],
+    ) -> None:
+        self.name = name
+        self._handler = handler
+
+    async def run(self, query: str) -> IntegrationResult:
+        try:
+            return self._ok(await self._handler(query))
+        except Exception as exc:
+            return self._err(str(exc))
+
+
+async def _domain_recon(query: str) -> dict:
+    return await DomainRecon.recon(query)
+
+
+async def _email_osint(query: str) -> dict:
+    return await EmailOSINT.lookup(query)
+
+
+async def _breach_email(query: str) -> dict:
+    return await BreachCheck.check(query, target_type="email")
+
+
+async def _darkweb_email(query: str) -> dict:
+    return await DarkWebDorks.search(query, target_type="email")
+
+
+async def _darkweb_domain(query: str) -> dict:
+    return await DarkWebDorks.search(query, target_type="domain")
+
+
+async def _phone_lookup(query: str) -> dict:
+    return await PhoneLookup.lookup(query)
+
+
+async def _breach_phone(query: str) -> dict:
+    return await BreachCheck.check(query, target_type="phone")
+
+
+async def _darkweb_phone(query: str) -> dict:
+    return await DarkWebDorks.search(query, target_type="phone")
+
+
+async def _username_search(query: str) -> dict:
+    return await UsernameSearch.search(query)
+
+
+async def _telegram_username(query: str) -> dict:
+    return await TelegramOSINT.lookup(query, target_type="username")
+
+
+async def _telegram_phone(query: str) -> dict:
+    return await TelegramOSINT.lookup(query, target_type="phone")
+
 # Integrations per query type
-_INTEGRATIONS_BY_TYPE: dict[QueryType, list] = {
+_INTEGRATIONS_BY_TYPE: dict[QueryType, list[BaseIntegration]] = {
     QueryType.IP: [
         IPAPIIntegration(),
         ShodanIntegration(),
@@ -37,9 +106,14 @@ _INTEGRATIONS_BY_TYPE: dict[QueryType, list] = {
         DNSIntegration(),
         WhoisIntegration(),
         VirusTotalIntegration(),
+        FunctionIntegration("domain_recon", _domain_recon),
+        FunctionIntegration("darkweb_dorks", _darkweb_domain),
     ],
     QueryType.EMAIL: [
         HIBPIntegration(),
+        FunctionIntegration("email_osint", _email_osint),
+        FunctionIntegration("breach_check", _breach_email),
+        FunctionIntegration("darkweb_dorks", _darkweb_email),
     ],
     QueryType.HASH: [
         VirusTotalIntegration(),
@@ -49,8 +123,16 @@ _INTEGRATIONS_BY_TYPE: dict[QueryType, list] = {
         HybridAnalysisIntegration(),
         AnyRunIntegration(),
     ],
-    QueryType.PHONE: [],
-    QueryType.USERNAME: [],
+    QueryType.PHONE: [
+        FunctionIntegration("phone_lookup", _phone_lookup),
+        FunctionIntegration("breach_check", _breach_phone),
+        FunctionIntegration("darkweb_dorks", _darkweb_phone),
+        FunctionIntegration("telegram_osint", _telegram_phone),
+    ],
+    QueryType.USERNAME: [
+        FunctionIntegration("username_search", _username_search),
+        FunctionIntegration("telegram_osint", _telegram_username),
+    ],
     QueryType.UNKNOWN: [],
 }
 

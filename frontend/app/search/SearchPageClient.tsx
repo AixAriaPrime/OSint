@@ -39,7 +39,7 @@ export default function SearchPageClient() {
     setData(null);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/api/search`, {
+      const res = await fetch(`${apiUrl}/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: searchQuery.trim() }),
