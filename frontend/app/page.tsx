@@ -21,6 +21,7 @@ interface SearchResponse {
   cached: boolean;
   results: IntegrationResult[];
   ai_summary: string | null;
+  done: boolean;
 }
 
 type WsEvent =
@@ -185,7 +186,9 @@ export default function OmniTraceDashboard() {
         const { nodes, edges } = buildGraph(legacy);
         setGraphNodes(nodes);
         setGraphEdges(edges);
-        setLoadingState("done");
+        if (legacy.done) {
+          setLoadingState("done");
+        }
       };
       ws.onerror = () => {
         setWsStatus("error");
