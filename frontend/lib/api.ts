@@ -13,5 +13,5 @@ export function getApiUrl(): string | null {
 }
 
 export function getWebSocketUrl(apiUrl: string): string {
-  return `${apiUrl.replace(/^http(s?)/, (_match, secure: string) => (secure ? "wss" : "ws"))}/ws`;
+  return `${apiUrl.replace(/^http(s?)/, (_match, secure: string) => (secure === "s" ? "wss" : "ws"))}/ws`;
 }
