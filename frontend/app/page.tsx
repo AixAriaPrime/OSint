@@ -298,7 +298,7 @@ export default function OmniTraceDashboard() {
             <button
               key={type}
               type="button"
-              aria-pressed={selectedType === type}
+              aria-pressed={selectedType === type ? "true" : "false"}
               onClick={() => setSelectedType(type)}
               className={`border px-3 py-2 text-xs font-bold uppercase tracking-widest transition ${
                 selectedType === type

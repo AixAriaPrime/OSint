@@ -125,14 +125,6 @@ body::before {
   background-color: rgba(80, 7, 7, 0.92) !important;
 }
 
-input[placeholder^="enter target"] {
-  border-color: #265d36;
-  border-radius: 0;
-  background: rgba(0, 0, 0, 0.6);
-  color: #bbf7d0;
-  caret-color: #4ade80;
-}
-
 .react-flow {
   background: #030705;
 }
