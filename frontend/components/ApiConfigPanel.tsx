@@ -8,13 +8,16 @@ interface Props {
   onConnected: () => void;
 }
 
+const HEALTH_CHECK_TIMEOUT_MS = 5000; // maximum wait for backend /health response
+
 const REPO_README = "https://github.com/AixAriaPrime/OSint#readme";
 
 export default function ApiConfigPanel({ onConnected }: Props) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = url.trim().replace(/\/+$/, "");
     if (!trimmed) return;
@@ -28,6 +31,26 @@ export default function ApiConfigPanel({ onConnected }: Props) {
     } catch {
       setError("Invalid URL format");
       return;
+    }
+
+    setIsValidating(true);
+    setError(null);
+    try {
+      const res = await fetch(`${trimmed}/health`, {
+        method: "GET",
+        signal: AbortSignal.timeout(HEALTH_CHECK_TIMEOUT_MS),
+      });
+      if (!res.ok) {
+        setError(`Backend returned HTTP ${res.status}. Is the URL correct?`);
+        return;
+      }
+    } catch {
+      setError(
+        "Could not reach the backend. Check the URL and ensure the server is running."
+      );
+      return;
+    } finally {
+      setIsValidating(false);
     }
 
     setApiUrl(trimmed);
@@ -77,10 +100,10 @@ export default function ApiConfigPanel({ onConnected }: Props) {
 
           <button
             type="submit"
-            disabled={!url.trim()}
+            disabled={!url.trim() || isValidating}
             className="w-full border border-red-500/70 bg-red-950/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-300 hover:bg-red-950/60 disabled:opacity-40 transition"
           >
-            Save & Connect
+            {isValidating ? "Testing connection…" : "Save & Connect"}
           </button>
         </form>
 
