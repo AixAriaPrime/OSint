@@ -3,8 +3,6 @@ const BUILD_API_URL = process.env.NEXT_PUBLIC_API_URL?.trim();
 
 const LS_KEY = "omnitrace_api_url";
 
-// Loopback prefix computed to avoid build-time lint false positives
-const _LOOPBACK_PREFIX = String.fromCharCode(49, 50, 55) + ".";
 
 /**
  * Returns the backend API base URL (no trailing slash).
@@ -23,7 +21,8 @@ export function getApiUrl(): string | null {
     if (stored) return stored.replace(/\/+$/, "");
 
     const h = window.location.hostname;
-    if (h === "localhost" || h.startsWith(_LOOPBACK_PREFIX)) {
+    // Match localhost or any 127.x.x.x loopback address
+    if (h === "localhost" || /^127[.]/.test(h)) {
       return "http://localhost:8000";
     }
   }

@@ -11,9 +11,8 @@ interface Props {
 export default function ApiConfigPanel({ onConnected }: Props) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [testing, setTesting] = useState(false);
 
-  const handleConnect = async (e: React.FormEvent) => {
+  const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = url.trim().replace(/\/+$/, "");
     if (!trimmed) return;
@@ -23,21 +22,8 @@ export default function ApiConfigPanel({ onConnected }: Props) {
       return;
     }
 
-    setTesting(true);
-    setError(null);
-
-    try {
-      const res = await fetch(`${trimmed}/health`, { signal: AbortSignal.timeout(5000) });
-      if (!res.ok) throw new Error(`Health check returned ${res.status}`);
-      setApiUrl(trimmed);
-      onConnected();
-    } catch {
-      // Accept the URL even if the health check fails (CORS or network may block it)
-      setApiUrl(trimmed);
-      onConnected();
-    } finally {
-      setTesting(false);
-    }
+    setApiUrl(trimmed);
+    onConnected();
   };
 
   return (
@@ -58,11 +44,11 @@ export default function ApiConfigPanel({ onConnected }: Props) {
         </div>
 
         <p className="text-sm text-green-700 mb-6 leading-relaxed">
-          Enter the URL of your OmniTrace backend. This is saved in your browser
-          and used for all requests.
+          Enter the URL of your OmniTrace backend. The value is saved in your
+          browser and used for all API requests.
         </p>
 
-        <form onSubmit={handleConnect} className="space-y-4">
+        <form onSubmit={handleSave} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-widest text-green-600 mb-2">
               API URL
@@ -70,7 +56,7 @@ export default function ApiConfigPanel({ onConnected }: Props) {
             <input
               type="url"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => { setUrl(e.target.value); setError(null); }}
               placeholder="https://your-backend.example.com"
               className="terminal-input w-full border border-green-900 bg-black/60 px-4 py-3 text-sm text-green-200 placeholder:text-green-900 focus:outline-none"
               autoFocus
@@ -83,10 +69,10 @@ export default function ApiConfigPanel({ onConnected }: Props) {
 
           <button
             type="submit"
-            disabled={!url.trim() || testing}
+            disabled={!url.trim()}
             className="w-full border border-red-500/70 bg-red-950/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-300 hover:bg-red-950/60 disabled:opacity-40 transition"
           >
-            {testing ? "Connecting\u2026" : "Connect"}
+            Save & Connect
           </button>
         </form>
 
