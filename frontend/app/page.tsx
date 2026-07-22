@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import type { Node, Edge } from "reactflow";
 import ResultCard from "@/components/ResultCard";
 import AIPanel from "@/components/AIPanel";
+import ApiConfigPanel from "@/components/ApiConfigPanel";
 import { getApiUrl, getWebSocketUrl } from "@/lib/api";
 
 const GraphView = dynamic(() => import("@/components/GraphView"), { ssr: false });
@@ -153,8 +154,14 @@ export default function OmniTraceDashboard() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<QueryType>("auto");
   const [sandboxTarget, setSandboxTarget] = useState("");
+  const [apiConfigured, setApiConfigured] = useState<boolean | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
+
+  // Detect whether a backend URL is available (runs client-side only).
+  useEffect(() => {
+    setApiConfigured(getApiUrl() !== null);
+  }, []);
 
   useEffect(() => {
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
@@ -294,13 +301,14 @@ export default function OmniTraceDashboard() {
 
   return (
     <div className="min-h-screen text-green-200">
+      {apiConfigured === false && (
+        <ApiConfigPanel onConnected={() => setApiConfigured(true)} />
+      )}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold">AIXARIA</h1>
-        {wsStatus === "connected" && (
-          <span className={`text-sm font-medium ${WS_STATUS_CLASS[wsStatus]}`}>
-            ● Live
-          </span>
-        )}
+        <h1 className="text-4xl font-bold">OmniTrace Intelligence Platform</h1>
+        <span className={`text-sm font-medium ${WS_STATUS_CLASS[wsStatus]}`}>
+          ● WS {wsStatus}
+        </span>
       </div>
 
       <div className="cyber-panel mb-8 p-4 sm:p-6">
