@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import type { Node, Edge } from "reactflow";
 import ResultCard from "@/components/ResultCard";
 import AIPanel from "@/components/AIPanel";
+import { getApiUrl, getWebSocketUrl } from "@/lib/api";
 
 const GraphView = dynamic(() => import("@/components/GraphView"), { ssr: false });
 
@@ -162,8 +163,13 @@ export default function OmniTraceDashboard() {
     const baseDelay = 1000;
 
     const connect = () => {
-      const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const wsUrl = base.replace(/^http(s?)/, (_match, secure: string) => (secure ? "wss" : "ws")) + "/ws";
+      const apiUrl = getApiUrl();
+      if (!apiUrl) {
+        setWsStatus("disconnected");
+        return;
+      }
+
+      const wsUrl = getWebSocketUrl(apiUrl);
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
 
@@ -247,7 +253,10 @@ export default function OmniTraceDashboard() {
 
     // REST fallback when WebSocket is unavailable
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = getApiUrl();
+      if (!apiUrl) {
+        throw new Error("Search service is not configured.");
+      }
       const res = await fetch(`${apiUrl}/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -286,10 +295,12 @@ export default function OmniTraceDashboard() {
   return (
     <div className="min-h-screen text-green-200">
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-4xl font-bold">OmniTrace Intelligence Platform</h1>
-        <span className={`text-sm font-medium ${WS_STATUS_CLASS[wsStatus]}`}>
-          ● WS {wsStatus}
-        </span>
+        <h1 className="text-4xl font-bold">AIXARIA</h1>
+        {wsStatus === "connected" && (
+          <span className={`text-sm font-medium ${WS_STATUS_CLASS[wsStatus]}`}>
+            ● Live
+          </span>
+        )}
       </div>
 
       <div className="cyber-panel mb-8 p-4 sm:p-6">

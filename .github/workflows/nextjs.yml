@@ -80,6 +80,8 @@ jobs:
           cd frontend
           ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
       - name: Build with Next.js
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL }}
         run: |
           cd frontend
           ${{ steps.detect-package-manager.outputs.runner }} next build
