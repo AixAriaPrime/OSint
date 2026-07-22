@@ -232,6 +232,14 @@ export default function OmniTraceDashboard() {
       };
     };
 
+    // Only attempt a connection when a backend URL is (or may be) available.
+    // When apiConfigured is explicitly false the panel is showing and there is
+    // no URL to connect to, so skip to avoid a redundant connect/disconnect cycle.
+    if (apiConfigured === false) {
+      setWsStatus("disconnected");
+      return;
+    }
+
     connect();
 
     return () => {
