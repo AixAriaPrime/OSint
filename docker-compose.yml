@@ -59,7 +59,7 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@pgbouncer:6432/omnitrace
       REDIS_URL: redis://redis:6379
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
     volumes:
       - logs:/app/logs
     depends_on:

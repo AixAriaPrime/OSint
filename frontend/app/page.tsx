@@ -238,7 +238,7 @@ export default function OmniTraceDashboard() {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       wsRef.current?.close();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- runs once to establish persistent WebSocket connection
+  }, [apiConfigured]); // re-run when apiConfigured changes so we connect once a URL is saved
 
   const handleSearch = async (searchQuery = query, forceType = selectedType) => {
     const q = searchQuery.trim();
