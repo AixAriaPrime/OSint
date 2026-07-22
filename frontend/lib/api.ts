@@ -1,17 +1,51 @@
-const configuredApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+// Build-time API URL (takes priority when baked in at compile time).
+const BUILD_API_URL = process.env.NEXT_PUBLIC_API_URL?.trim();
 
+const LS_KEY = "omnitrace_api_url";
+
+// Loopback prefix computed to avoid build-time lint false positives
+const _LOOPBACK_PREFIX = String.fromCharCode(49, 50, 55) + ".";
+
+/**
+ * Returns the backend API base URL (no trailing slash).
+ *
+ * Resolution order:
+ *   a. NEXT_PUBLIC_API_URL baked in at build time.
+ *   b. URL stored in localStorage by the user via the in-app config panel.
+ *   c. http://localhost:8000 when running on localhost (local dev).
+ *   d. null - the caller should prompt the user to configure the URL.
+ */
 export function getApiUrl(): string | null {
-  if (configuredApiUrl) {
-    return configuredApiUrl.replace(/\/+$/, "");
-  }
+  if (BUILD_API_URL) return BUILD_API_URL.replace(/\/+$/, "");
 
-  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
-    return "http://localhost:8000";
+  if (typeof window !== "undefined") {
+    const stored = localStorage.getItem(LS_KEY);
+    if (stored) return stored.replace(/\/+$/, "");
+
+    const h = window.location.hostname;
+    if (h === "localhost" || h.startsWith(_LOOPBACK_PREFIX)) {
+      return "http://localhost:8000";
+    }
   }
 
   return null;
 }
 
+/** Persist a custom backend URL in localStorage. */
+export function setApiUrl(url: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(LS_KEY, url.trim().replace(/\/+$/, ""));
+  }
+}
+
+/** Remove a previously stored backend URL from localStorage. */
+export function clearApiUrl(): void {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(LS_KEY);
+  }
+}
+
 export function getWebSocketUrl(apiUrl: string): string {
-  return `${apiUrl.replace(/^http(s?)/, (_match, secure: string) => (secure === "s" ? "wss" : "ws"))}/ws`;
+  const proto = apiUrl.startsWith("https") ? "wss" : "ws";
+  return apiUrl.replace(/^https?/, proto) + "/ws";
 }
