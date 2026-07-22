@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # App
     app_host: str = "0.0.0.0"
     app_port: int = 8000
+    # CORS — comma-separated list of allowed frontend origins.
+    # Defaults to * (allow all) so deployments work out of the box.
+    # Restrict this to specific origins in production for tighter security,
+    # e.g. CORS_ORIGINS=https://your-frontend.example.com
     cors_origins: str = "*"
 
     @property
