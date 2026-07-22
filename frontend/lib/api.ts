@@ -5,10 +5,7 @@ export function getApiUrl(): string | null {
     return configuredApiUrl.replace(/\/+$/, "");
   }
 
-  if (
-    typeof window !== "undefined" &&
-    (window.location.hostname === "localhost" || window.location.hostname === "******27.0.0.******")
-  ) {
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
     return "http://localhost:8000";
   }
 
