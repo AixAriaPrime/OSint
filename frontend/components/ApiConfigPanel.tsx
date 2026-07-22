@@ -19,14 +19,14 @@ export default function ApiConfigPanel({ onConnected }: Props) {
     const trimmed = url.trim().replace(/\/+$/, "");
     if (!trimmed) return;
 
+    if (!/^https?:\/\//.test(trimmed)) {
+      setError("URL must start with http:// or https://");
+      return;
+    }
     try {
       new URL(trimmed);
     } catch {
       setError("Invalid URL format");
-      return;
-    }
-    if (!/^https?:/.test(trimmed)) {
-      setError("URL must start with http:// or https://");
       return;
     }
 
