@@ -21,8 +21,8 @@ export function getApiUrl(): string | null {
     if (stored) return stored.replace(/\/+$/, "");
 
     const h = window.location.hostname;
-    // Match localhost or any 127.x.x.x loopback address (prefix check)
-    if (h === "localhost" || /^127[.]/.test(h)) {
+    // Match localhost or any 127.0.0.0/8 loopback address
+    if (h === "localhost" || /^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(h)) {
       return "http://localhost:8000";
     }
   }

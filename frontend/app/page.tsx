@@ -302,7 +302,7 @@ export default function OmniTraceDashboard() {
   return (
     <div className="min-h-screen text-green-200">
       {apiConfigured === false && (
-        <ApiConfigPanel onConnected={() => window.location.reload()} />
+        <ApiConfigPanel onConnected={() => setApiConfigured(true)} />
       )}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-bold">OmniTrace Intelligence Platform</h1>

@@ -8,6 +8,8 @@ interface Props {
   onConnected: () => void;
 }
 
+const REPO_README = "https://github.com/AixAriaPrime/OSint#readme";
+
 export default function ApiConfigPanel({ onConnected }: Props) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +19,13 @@ export default function ApiConfigPanel({ onConnected }: Props) {
     const trimmed = url.trim().replace(/\/+$/, "");
     if (!trimmed) return;
 
-    if (!/^https?:\/\/.+/.test(trimmed)) {
+    try {
+      new URL(trimmed);
+    } catch {
+      setError("Invalid URL format");
+      return;
+    }
+    if (!/^https?:/.test(trimmed)) {
       setError("URL must start with http:// or https://");
       return;
     }
@@ -80,7 +88,7 @@ export default function ApiConfigPanel({ onConnected }: Props) {
           <p>
             Self-hosting?{" "}
             <a
-              href="https://github.com/AixAriaPrime/OSint#readme"
+              href={REPO_README}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-green-700 hover:text-green-400 transition"
