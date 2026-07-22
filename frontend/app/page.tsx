@@ -296,9 +296,11 @@ export default function OmniTraceDashboard() {
     <div className="min-h-screen text-green-200">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-bold">        AIXARIA</h1>
-        <span className={`text-sm font-medium ${WS_STATUS_CLASS[wsStatus]}`}>
+        {wsStatus === "connected" && (
+          <span className={`text-sm font-medium ${WS_STATUS_CLASS[wsStatus]}`}>
           ● Live
-        </span>
+          </span>
+        )}
       </div>
 
       <div className="cyber-panel mb-8 p-4 sm:p-6">
