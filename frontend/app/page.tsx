@@ -46,6 +46,15 @@ const WS_STATUS_CLASS: Record<WsStatus, string> = {
   error: "text-red-400",
 };
 
+function parseWsMessage(payload: unknown): WsEvent | SearchResponse | null {
+  if (typeof payload !== "string") return null;
+  try {
+    return JSON.parse(payload) as WsEvent | SearchResponse;
+  } catch {
+    return null;
+  }
+}
+
 function buildGraph(data: SearchResponse): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -163,7 +172,8 @@ export default function OmniTraceDashboard() {
         reconnectAttempts = 0;
       };
       ws.onmessage = (event) => {
-        const message: WsEvent | SearchResponse = JSON.parse(event.data);
+        const message = parseWsMessage(event.data);
+        if (!message) return;
 
         if ("type" in message && typeof message.type === "string" && WS_EVENT_TYPES.has(message.type)) {
           const wsEvent = message as WsEvent;
