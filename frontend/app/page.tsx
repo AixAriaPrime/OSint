@@ -232,13 +232,21 @@ export default function OmniTraceDashboard() {
       };
     };
 
+    // Only attempt a connection when a backend URL is (or may be) available.
+    // When apiConfigured is explicitly false the panel is showing and there is
+    // no URL to connect to, so skip to avoid a redundant connect/disconnect cycle.
+    if (apiConfigured === false) {
+      setWsStatus("disconnected");
+      return;
+    }
+
     connect();
 
     return () => {
       if (reconnectTimer) clearTimeout(reconnectTimer);
       wsRef.current?.close();
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- runs once to establish persistent WebSocket connection
+  }, [apiConfigured]); // re-run when apiConfigured changes so we connect once a URL is saved
 
   const handleSearch = async (searchQuery = query, forceType = selectedType) => {
     const q = searchQuery.trim();
