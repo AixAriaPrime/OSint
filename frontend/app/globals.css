@@ -173,3 +173,10 @@ main h2 {
 .rounded-lg {
   border-radius: 0 !important;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .scan-line {
+    display: none;
+    animation: none;
+  }
+}
