@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 ⬡
               </span>
               <span>
-                <span className="block text-sm font-black tracking-[0.28em] text-green-300 group-hover:text-green-200">
+                <span className="block text-sm font-black tracking-widest text-green-300 group-hover:text-green-200">
                   OMNITRACE
                 </span>
                 <span className="block text-xs tracking-[0.35em] text-green-800">INTELLIGENCE SYSTEM</span>

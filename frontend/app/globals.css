@@ -48,7 +48,7 @@ body::before {
 }
 
 @keyframes scan {
-  from { transform: translateY(-99%); }
+  from { transform: translateY(-99vh); }
   to { transform: translateY(99vh); }
 }
 

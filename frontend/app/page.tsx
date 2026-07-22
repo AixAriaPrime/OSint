@@ -238,7 +238,10 @@ export default function OmniTraceDashboard() {
     setGraphEdges([]);
 
     if (wsRef.current?.readyState === WebSocket.OPEN) {
-      wsRef.current.send(JSON.stringify({ query: q, force_type: forceType }));
+      wsRef.current.send(JSON.stringify({
+        query: q,
+        ...(forceType === "auto" ? {} : { force_type: forceType }),
+      }));
       return;
     }
 
@@ -319,14 +322,14 @@ export default function OmniTraceDashboard() {
             }
           }}
           className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
-          placeholder="enter target: IP, domain, email, hash, URL..."
+          placeholder="Enter target: IP, domain, email, hash, URL..."
         />
         <button
           onClick={() => void handleSearch()}
           disabled={!query.trim() || loadingState === "loading"}
           className="bg-brand-600 hover:bg-brand-700 disabled:opacity-50 px-8 py-3 rounded-lg font-medium transition"
         >
-          {loadingState === "loading" ? "scanning..." : "execute trace"}
+          {loadingState === "loading" ? "Scanning..." : "Execute trace"}
         </button>
         </div>
       </div>
@@ -410,7 +413,7 @@ export default function OmniTraceDashboard() {
             onClick={() => void handleSearch(sandboxTarget, "url")}
             className="border border-red-500/70 bg-red-950/30 px-6 py-3 text-xs font-bold uppercase tracking-widest text-red-300 hover:bg-red-950/60 disabled:opacity-40"
           >
-            detonate URL
+            Detonate URL
           </button>
         </div>
       </div>
