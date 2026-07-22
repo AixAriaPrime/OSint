@@ -22,7 +22,7 @@ export function getApiUrl(): string | null {
 
     const h = window.location.hostname;
     const parts = h.split(".");
-    // Match localhost or any ******27.0.0.0/8 loopback IP (numeric octet validation)
+    // Match localhost or any 127.0.0.0/8 loopback IP (numeric octet validation)
     const isLoopback = parts.length === 4 && parts[0] === "127" &&
       parts.every((p) => /^\d{1,3}$/.test(p) && +p <= 255);
     if (h === "localhost" || isLoopback) {
